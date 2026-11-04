@@ -22,7 +22,7 @@ window.BOARD = (function () {
 .bd-t.fin{--tt:84px;background:linear-gradient(135deg,#ffd36b,#ff9a3c);border-color:#fff3b8;color:#3a2400;font-size:34px;box-shadow:0 0 36px rgba(255,194,71,.8);animation:bdp 1.6s infinite}
 @keyframes bdp{50%{box-shadow:0 0 62px rgba(255,194,71,1)}}
 .bd-tk{position:absolute;width:var(--tk);height:var(--tk);margin:calc(var(--tk) * -1.35) 0 0 calc(var(--tk) / -2);z-index:5;transition:left .45s cubic-bezier(.3,1.4,.5,1),top .45s cubic-bezier(.3,1.4,.5,1);filter:drop-shadow(0 8px 6px rgba(0,0,0,.55))}
-.bd-tk i{display:block;width:100%;height:100%;border-radius:50%;background:url(ref-main-character.png) center 18%/cover,#241d36;border:4px solid var(--c);box-shadow:0 0 22px var(--c);animation:bdb 1s infinite}
+.bd-tk i{display:block;width:100%;height:100%;border-radius:50%;background:url(../ref-main-character.png) center 18%/cover,#241d36;border:4px solid var(--c);box-shadow:0 0 22px var(--c);animation:bdb 1s infinite}
 @keyframes bdb{50%{transform:translateY(-6px)}}
 .bd-tk::after{content:'';position:absolute;left:50%;bottom:-7px;width:13px;height:13px;margin-left:-7px;background:var(--c);transform:rotate(45deg);z-index:-1}
 .bd-tk em{position:absolute;left:50%;top:-24px;transform:translateX(-50%);white-space:nowrap;font:800 14px var(--font,sans-serif);font-style:normal;background:var(--c);color:#15121F;padding:2px 9px;border-radius:6px}
@@ -93,8 +93,11 @@ body.bd-on #cbtn{display:none!important}
     document.body.classList.add('bd-on');
     const len = o.len || 12, cls = o.mode === 'class', P = layout(len), isRest = i => i > 0 && i < len && i % 5 === 0;
     const T = o.teams.map((t, i) => ({ name: t.name, color: t.color || COLORS[i % COLORS.length], pos: 0, ok: 0, bad: 0, blocks: 0, turns: 0, used: 0, wrong: [], hand: handOf(t.ids) }));
-    let deck = shuffle(o.deck), cur = 0, q = null, busy = false, over = false, tmr = 0;
+    let deck = shuffle(o.deck), first = null, cur = 0, q = null, busy = false, over = false, tmr = 0;
 
+    if (o.avoid && deck.length > 1 && deck[0].s === o.avoid) { const k = 1 + Math.floor(Math.random() * (deck.length - 1)); [deck[0], deck[k]] = [deck[k], deck[0]] } // 다시 하기: 직전 첫 문제는 첫 문제로 안 나오게
+    // 다시 하기: 모둠 순서도 새로 섞기(직전에 먼저 시작한 모둠은 맨 앞에 안 오게), 모둠 색은 그대로
+    const reorder = ts => { ts = ts.map((t, i) => Object.assign({}, t, { color: t.color || COLORS[i % COLORS.length] })); if (ts.length < 2) return ts; let r = shuffle(ts); if (r[0].name === ts[0].name) { const k = 1 + Math.floor(Math.random() * (r.length - 1)); [r[0], r[k]] = [r[k], r[0]] } return r };
     const pct = p => `left:${p.x / 10}%;top:${p.y / 6}%`;
     let tiles = '';
     P.forEach((p, i) => { tiles += `<div class="bd-t${isRest(i) ? ' rest' : ''}${i === len ? ' fin' : ''}${i === 0 ? ' st' : ''}" style="${pct(p)}">${i === 0 ? '출발' : i === len ? '🏆' : isRest(i) ? '쉼' : i}</div>` });
@@ -151,7 +154,7 @@ body.bd-on #cbtn{display:none!important}
     };
     function take(t) {
       if (!deck.length) deck = shuffle(o.refill ? o.refill() : o.deck);
-      let i = deck.findIndex(c => c.g !== t.name); if (i < 0) i = 0; return deck.splice(i, 1)[0];
+      let i = deck.findIndex(c => c.g !== t.name); if (i < 0) i = 0; const c = deck.splice(i, 1)[0]; if (first === null) first = c.s; return c;
     }
     function ask() {
       const t = T[cur], c = take(t), os = shuffle(c.o); q = { c, os };
@@ -214,7 +217,8 @@ body.bd-on #cbtn{display:none!important}
         ${R.map((t, i) => `<tr class="${i === 0 ? 'w' : ''}"><td>${i + 1}</td><td>${esc(t.name)}</td><td>${t.pos >= len ? '도착' : t.pos + '칸'}</td><td>${t.turns}</td><td>${t.ok}</td><td>${t.bad}</td><td>${t.blocks}</td></tr>`).join('')}</table>
         ${words.length ? `<div class="rv"><b>다시 생각해 볼 말:</b> ${words.map(esc).join(' · ')}</div>` : ''}
         <div class="rv"><b>오늘 배운 말:</b> 확인하기 · 정보 지키기 · 사람을 해치지 않기 · 밝히기와 내 책임</div>
-        <button class="btn" id="bd-ex">${o.mode === 'class' ? '처음 화면으로' : '메뉴로'}</button></div>`;
+        <button class="btn" id="bd-again">🔄 다시 하기</button><button class="btn" id="bd-ex" style="background:transparent;color:#FFC247;border:2px solid #FFC247">${o.mode === 'class' ? '처음 화면으로' : '메뉴로'}</button></div>`;
+      $('#bd-again').onclick = () => { document.body.classList.remove('bd-on'); play(root, Object.assign({}, o, { deck: o.refill ? o.refill() : o.deck, avoid: first, teams: reorder(o.teams) })) };
       $('#bd-ex').onclick = () => o.onExit && o.onExit();
     }
     $('#bd-x').onclick = () => { if (cls) { if (confirm('지금까지의 위치로 결과를 볼까요?')) finish() } else { clearQ(); o.onExit && o.onExit() } };

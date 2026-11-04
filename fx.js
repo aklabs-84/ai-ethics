@@ -26,7 +26,11 @@ window.FX = (function () {
     auto:  () => { tone(300, 0, .25, 'sawtooth', .08, 150); },                                   // 시간 끝, 자동 선택
     good:  () => { [523, 659, 784, 1047].forEach((f, i) => tone(f, i * .11, .35, 'triangle', .13)); tone(1318, .5, .6, 'sine', .1); },
     mid:   () => { tone(440, 0, .3, 'triangle', .11); tone(392, .22, .4, 'triangle', .11); tone(349, .46, .6, 'sine', .1); },
-    bad:   () => { tone(220, 0, .4, 'sawtooth', .1, 80); tone(165, .25, .6, 'square', .08, 60); }
+    bad:   () => { tone(220, 0, .4, 'sawtooth', .1, 80); tone(165, .25, .6, 'square', .08, 60); },
+    fan:   () => { for (let i = 0; i < 18; i++) tone(1100 + (i % 3) * 180, i * .055, .045, 'square', .035); tone(1568, 1.05, .25, 'triangle', .08); tone(2093, 1.15, .4, 'sine', .06); }, // 카드 펼침 차르르
+    hov:   () => tone(760, 0, .05, 'sine', .05),                                                 // 카드 위에 마우스
+    flip:  () => { tone(880, 0, .08, 'triangle', .1); tone(1320, .07, .2, 'triangle', .1); },    // 카드 한 장 고름
+    back:  () => { tone(1100, 0, .22, 'triangle', .08, 500); }                                   // 덱으로 돌아가기
   };
   function play(name) { try { sfx[name] && sfx[name](); } catch (e) {} }
 
