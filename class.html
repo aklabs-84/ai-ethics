@@ -52,7 +52,13 @@ a.gl{color:var(--ai);font-weight:700}
 #gxd .gc>div{position:absolute;inset:0;border-radius:12px;backface-visibility:hidden;-webkit-backface-visibility:hidden}
 #gxd .bk{background:repeating-linear-gradient(45deg,#1b1630 0 .7em,#221b3b .7em 1.4em);border:3px solid var(--gold);box-shadow:inset 0 0 0 5px #1b1630,inset 0 0 0 7px rgba(255,194,71,.5),0 8px 22px rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;font:400 34px/1.2 var(--head);color:var(--gold);text-align:center}
 #gxd .ft{transform:rotateY(180deg);background:#241d36 center/cover no-repeat;border:3px solid var(--c);box-shadow:0 0 26px color-mix(in srgb,var(--c) 55%,transparent)}
-#gxd:not(.go):hover .gc:last-child{transform:translate(var(--x),var(--y)) rotate(var(--r)) translateY(-14px)}
+#gxd .gc{top:56vh;transition:transform 1s cubic-bezier(.2,.9,.25,1.15),translate .25s}
+#gxd.go .gc{cursor:pointer}#gxd.go .gc:hover,#gxd .gc.sel{translate:0 -36px}#gxd .gc.sel .ft{border-color:#fff}
+#gxd .fan{position:absolute;inset:0;transform-origin:50% 0;transition:transform .8s cubic-bezier(.2,.9,.25,1)}
+#gxd.mini .fan{transform:translateY(calc(-.4*(56vh - 195px) + 26px)) scale(.4)}#gxd.mini .hint{opacity:0;pointer-events:none}
+#gxd .gbar{position:absolute;top:16px;right:clamp(18px,4vw,48px);z-index:3;display:flex;gap:22px}#gxd .gbar button{cursor:pointer;font:700 22px var(--font);color:var(--ink);background:none;border:0;padding:6px 0;border-bottom:2px solid var(--gold)}#gxd .gbar button:hover{color:var(--gold)}#gxd:not(.go) #gxall{display:none}
+#gxd .one{display:none;position:absolute;left:0;right:0;top:250px;bottom:0;overflow:auto;padding:0 clamp(18px,5vw,64px) 60px;cursor:default;z-index:2}#gxd.mini .one{display:block}
+#gxd .one .gx-sec{margin:6px 0 0}
 @media (prefers-reduced-motion:reduce){#gxd .gc{transition:none}}
 @media (max-width:700px){.gx-row{flex-direction:column}.gx-th{width:100%;max-width:240px}.gx-tx{font-size:22px}.gx-mean{font-size:24px}}
 </style>
@@ -180,19 +186,31 @@ function gxRender(){
   (spv.length?`<section class="gx-sec" id="gx-sp"><h3>★ 특별 카드</h3><div class="gx-mean">이야기 한 편의 결말을 모두 찾으면 받는 카드예요</div>${spv.map(c=>gxRow(c,true)).join('')}</section>`:'');
 }
 let gxT=0;
-function gxDeckClose(){clearTimeout(gxT);const d=$('gxd');d.classList.remove('on','go','out');d.innerHTML=''}
+function gxDeckClose(){clearTimeout(gxT);const d=$('gxd');d.classList.remove('on','go','out','mini');d.innerHTML=''}
+function gxAll(){const d=$('gxd');$('gx').classList.add('on');$('gx').scrollTop=0;d.classList.add('out');gxT=setTimeout(gxDeckClose,750)}
+function gxPick(el){const d=$('gxd'),c=CARDS.data(el.dataset.id),sp=c.type==='special';
+  d.querySelectorAll('.gc.sel').forEach(x=>x.classList.remove('sel'));el.classList.add('sel');
+  $('gxone').innerHTML=`<section class="gx-sec"><h3>${sp?'★ 특별 카드':esc(c.concept)}</h3><div class="gx-mean">${esc(sp?'이야기 한 편의 결말을 모두 찾으면 받는 카드예요':c.meaning)}</div>${gxRow(c,sp)}</section>`;
+  $('gxone').scrollTop=0;d.classList.add('mini')}
 function gxDeckOpen(){
   const d=$('gxd'),ids=CARDS.ALL,n=ids.length,TY={shield:'#FFC247',trap:'#FF7A7A',mid:'#C9D3F5',special:'#D08AFF'};
-  d.classList.remove('go','out');
-  d.innerHTML='<div class="hint">📚 개념 카드<small>카드 더미를 눌러 보세요 ▼</small></div>'+ids.map((id,i)=>{
+  d.classList.remove('go','out','mini');
+  d.innerHTML='<div class="hint">📚 개념 카드<small>카드 더미를 눌러 보세요 ▼</small></div><div class="fan">'+ids.map((id,i)=>{
     const c=CARDS.data(id),x=(Math.random()*8-4),y=-i*1.6,r=(Math.random()*6-3);
-    return `<div class="gc" style="--c:${TY[c.type]||'#C9D3F5'};--x:${x}px;--y:${y}px;--r:${r}deg;transform:translate(${x}px,${y}px) rotate(${r}deg)"><div class="bk">개념<br>카드</div><div class="ft" style="background-image:url(${c.img})"></div></div>`}).join('');
+    return `<div class="gc" data-id="${id}" style="--c:${TY[c.type]||'#C9D3F5'};transform:translate(${x}px,${y}px) rotate(${r}deg)"><div class="bk">개념<br>카드</div><div class="ft" style="background-image:url(${c.img})"></div></div>`}).join('')+
+    '</div><div class="gbar"><button id="gxall">전체 목록 보기</button><button id="gxdx">닫기 ✕</button></div><div class="one" id="gxone"></div>';
   d.classList.add('on');
-  d.onclick=()=>{if(d.classList.contains('go'))return;d.classList.add('go');d.querySelector('.hint').style.opacity=0;
-    const W=Math.min(innerWidth,1500),step=Math.min(W/(n+1),(innerWidth-380)/(n-1)),cs=d.querySelectorAll('.gc');
-    cs.forEach((el,i)=>{const t=i/(n-1)-.5,x=t*step*(n-1),y=Math.abs(t)*Math.abs(t)*260-60,rot=t*46;
-      el.style.transitionDelay=(i*55)+'ms';el.style.transform=`translate(${x}px,${y}px) rotate(${rot}deg) rotateY(180deg)`});
-    gxT=setTimeout(()=>{$('gx').classList.add('on');$('gx').scrollTop=0;d.classList.add('out');gxT=setTimeout(gxDeckClose,750)},n*55+1900)};
+  d.onclick=e=>{const t=e.target;
+    if(t.closest('#gxdx')){gxDeckClose();return}
+    if(t.closest('#gxall')){gxAll();return}
+    if(d.classList.contains('go')){
+      const th=t.closest('.gx-th');if(th){CARDS.zoom(th.dataset.id);return}
+      const g=t.closest('.gc');if(g)gxPick(g);return}
+    d.classList.add('go');const h=d.querySelector('.hint');h.innerHTML='📚 개념 카드<small>보고 싶은 카드를 눌러 보세요</small>';
+    const step=Math.min(Math.min(innerWidth,1500)/(n+1),(innerWidth-380)/(n-1));
+    d.querySelectorAll('.gc').forEach((el,i)=>{const tt=i/(n-1)-.5,x=tt*step*(n-1),y=tt*tt*260-60,rot=tt*46;
+      el.style.transitionDelay=(i*55)+'ms,0ms';el.style.transform=`translate(${x}px,${y}px) rotate(${rot}deg) rotateY(180deg)`});
+    gxT=setTimeout(()=>d.querySelectorAll('.gc').forEach(el=>el.style.transitionDelay='0ms'),n*55+1100)};
 }
 $('gxo').onclick=()=>{gxRender();$('gx').scrollTop=0;if(matchMedia('(prefers-reduced-motion:reduce)').matches){$('gx').classList.add('on')}else gxDeckOpen()};
 $('gx').onclick=e=>{const t=e.target;
