@@ -9,7 +9,7 @@
 <style>
 :root{--bg:#15121F;--ink:#F4F0E8;--sub:#A9A3B8;--line:#3A3450;--gold:#FFC247;--ai:#6EE7D0;--bad:#FF8A8A;--font:'Pretendard Variable',Pretendard,system-ui,sans-serif;--head:'Black Han Sans','Pretendard Variable',sans-serif}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:500 18px/1.6 var(--font);padding:18px}
-#cbtn,#cx-layer{display:none!important}
+#cbtn{display:none!important}
 .setup{max-width:980px;margin:0 auto}h1{font:400 38px var(--head);color:var(--gold);margin:6px 0}
 .setup>p{color:var(--sub)}h2{font-size:21px;margin:28px 0 6px}h2 small{color:var(--sub);font-weight:500;font-size:16px}
 textarea{width:100%;background:#1f1c2b;color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:12px;font:inherit;font-size:15px}
@@ -27,12 +27,30 @@ textarea{width:100%;background:#1f1c2b;color:var(--ink);border:1px solid var(--l
 .how{background:#1f1c2b;border:1px solid var(--line);border-radius:12px;padding:12px 18px;color:#d8d2e6}.how ol{margin:4px 0;padding-left:22px}
 details.dk{margin-top:26px}details.dk summary{cursor:pointer;color:var(--sub)}
 a.gl{color:var(--ai);font-weight:700}
+#gx{position:fixed;inset:0;z-index:7;background:var(--bg);overflow:auto;display:none;padding:24px clamp(18px,5vw,64px) 80px}#gx.on{display:block}
+.gx-top{display:flex;justify-content:space-between;align-items:baseline;gap:20px}.gx-top h2{font:400 clamp(36px,5vw,56px)/1.1 var(--head);color:var(--gold);margin:0}
+.gx-x{cursor:pointer;font:700 22px var(--font);color:var(--ink);background:none;border:0;padding:6px 0;border-bottom:2px solid var(--gold)}.gx-x:hover{color:var(--gold)}
+.gx-sub{color:var(--sub);font-size:24px;margin:6px 0 14px}.gx-sub b{color:var(--ink)}
+.gx-nav{position:sticky;top:-24px;z-index:2;background:var(--bg);padding:14px 0 12px;border-bottom:1px solid var(--line)}
+.gx-fl,.gx-cn{display:flex;flex-wrap:wrap;gap:8px 10px}.gx-cn{margin-top:10px}
+.gx-nav button{font:700 20px var(--font);color:var(--ink);background:#1f1c2b;border:1px solid var(--line);border-radius:8px;padding:6px 14px;cursor:pointer}.gx-nav button:hover{border-color:var(--gold);color:var(--gold)}
+.gx-nav button.on{background:var(--gold);color:#1a1200;border-color:var(--gold)}.gx-cn button{font-weight:500;font-size:18px}
+.gx-sec{margin:44px 0;scroll-margin-top:150px}.gx-sec h3{font:400 clamp(36px,4.6vw,54px)/1.15 var(--head);color:var(--gold);margin:0}
+.gx-mean{font-size:30px;font-weight:700;margin:6px 0 18px;line-height:1.45}
+.gx-row{display:flex;gap:28px;align-items:flex-start;margin:16px 0;padding:18px;background:#1f1c2b;border:1px solid var(--line);border-radius:14px}
+.gx-th{flex:none;width:190px;height:230px;border-radius:12px;border:3px solid var(--c);background:#241d36 center/cover no-repeat;cursor:pointer;position:relative;transition:transform .25s}.gx-th:hover{transform:translateY(-6px)}
+.gx-th i{position:absolute;left:0;right:0;bottom:0;background:rgba(21,18,31,.82);color:var(--ink);font:700 16px var(--font);text-align:center;padding:4px 0;font-style:normal}
+.gx-tx{font-size:27px;line-height:1.6;min-width:0}.gx-tp{display:inline-block;color:var(--c);border:2px solid var(--c);border-radius:6px;font-weight:800;font-size:20px;padding:0 10px;margin-right:10px}
+.gx-tx .nm{color:var(--sub);font-size:22px}.gx-tx .st{margin:6px 0}.gx-tx .st em{font-style:normal;font-weight:800;color:var(--ink);margin-right:8px}.gx-tx .ls{color:var(--gold);font-weight:700}.gx-tx .us{color:var(--ai);font-size:23px}
+.gx-tx h4{font-size:32px;margin:0 0 4px;color:var(--c)}
+@media (max-width:700px){.gx-row{flex-direction:column}.gx-th{width:100%;max-width:240px}.gx-tx{font-size:22px}.gx-mean{font-size:24px}}
 </style>
 </head>
 <body>
 <div class="setup" id="root">
 <h1>선생님 화면 · 모둠 대결</h1>
 <p>학생들이 클래스로그 AI에 낸 글을 <b>전부 복사해서 한 칸에 붙여넣으면</b> 모둠별로 알아서 나눠요. 서버 없이 이 화면에서만 동작해요. <a class="gl" href="guide.html" target="_blank">▶ 수업용 설명 화면(가이드) 열기</a></p>
+<p><button class="btn g" id="gxo" style="margin:0">📚 개념 카드 한눈에 보기 <small>(수업 설명용)</small></button></p>
 <div class="rules"><b>규칙</b><ul>
 <li>길은 12칸. 좋은 선택 +2칸, 아쉬운 선택 −2칸. 5칸·10칸은 쉼 칸이에요.</li>
 <li>문제는 <b>다른 모둠이 만든 사건</b>만 나와요(자기 모둠 카드는 빠져요).</li>
@@ -58,6 +76,7 @@ a.gl{color:var(--ai);font-weight:700}
 <button class="btn g" id="mk">덱 코드 만들기</button><button class="btn" id="cp" hidden>📋 복사하기</button><span id="cm" class="ok"></span>
 <textarea id="out" rows="3" readonly hidden></textarea></details>
 </div>
+<div id="gx"></div>
 <script src="data/story1.js"></script>
 <script src="data/story2.js"></script>
 <script src="data/story3.js"></script>
@@ -126,6 +145,34 @@ $('mk').onclick=()=>{
   let a=allCards();if($('rs').checked)a=a.concat(DECK.RESERVE);
   if(!a.length){alert('사용할 카드가 없어요');return}
   $('out').hidden=false;$('cp').hidden=false;$('out').value=DECK.enc({g:'선생님',cards:a});$('cm').textContent=' '+a.length+'장짜리 덱이에요'};
+// ---- 개념 카드 한눈에 보기: 18장 전체를 개념별로 묶어 수업에서 설명 (학생 기록과 무관) ----
+const GX={shield:['방패','#FFC247','게임에서 같은 개념 문제를 틀렸을 때 막아 줘요'],trap:['함정','#FF6B6B','이렇게 하면 위험해요'],mid:['갈림길','#C9D3F5','되돌아보면 다르게 고를 수 있었던 길이에요'],special:['특별','#D08AFF','한 편의 결말을 모두 모으면 받아요']};
+let gxF='all';
+function gxRow(c,showName){const g=GX[c.type];
+  return `<div class="gx-row" style="--c:${g[1]}"><div class="gx-th" data-id="${c.id}" style="background-image:url(${c.img})" title="누르면 카드가 크게 보여요"><i>🔍 크게 보기</i></div>
+  <div class="gx-tx">${showName?`<h4>${esc(c.concept)}</h4>`:''}<div><span class="gx-tp">${g[0]}</span><span class="nm">${esc(c.series)} · ${esc(c.name||'')}</span></div>
+  <div class="st"><em>이야기에서는</em>${esc(c.story)}</div>${c.lesson?`<div class="ls">“${esc(c.lesson)}”</div>`:''}<div class="us">${g[2]}</div></div></div>`}
+function gxRender(){
+  const ds=CARDS.ALL.map(CARDS.data),by={},order=[];
+  ds.filter(c=>c.type!=='special').forEach(c=>{if(!by[c.concept]){by[c.concept]=[];order.push(c.concept)}by[c.concept].push(c)});
+  const sp=ds.filter(c=>c.type==='special'),ok=c=>gxF==='all'||c.type===gxF;
+  const secs=order.map(k=>({id:'gx-'+order.indexOf(k),k,cs:by[k].filter(ok),mean:by[k][0].meaning})).filter(s=>s.cs.length);
+  const spv=sp.filter(ok),n=ds.filter(ok).length;
+  const fl=[['all','전체 '+ds.length],['shield','방패'],['trap','함정'],['mid','갈림길'],['special','특별']];
+  $('gx').innerHTML=`<div class="gx-top"><h2>📚 개념 카드 한눈에 보기</h2><button class="gx-x" id="gxc">닫기 ✕</button></div>
+  <div class="gx-sub">AI 윤리 개념 <b>${order.length}개</b> · 카드 <b>${ds.length}장</b> (결말 카드 ${ds.length-sp.length}장 + 특별 ${sp.length}장). 카드를 누르면 크게 보여요.</div>
+  <div class="gx-nav"><div class="gx-fl">${fl.map(f=>`<button data-f="${f[0]}" class="${gxF===f[0]?'on':''}">${f[1]}</button>`).join('')}</div>
+  <div class="gx-cn">${secs.map(s=>`<button data-go="${s.id}">${esc(s.k)}</button>`).join('')}${spv.length?'<button data-go="gx-sp">★ 특별</button>':''}</div></div>`+
+  secs.map(s=>`<section class="gx-sec" id="${s.id}"><h3>${esc(s.k)}</h3><div class="gx-mean">${esc(s.mean)}</div>${s.cs.map(c=>gxRow(c,false)).join('')}</section>`).join('')+
+  (spv.length?`<section class="gx-sec" id="gx-sp"><h3>★ 특별 카드</h3><div class="gx-mean">이야기 한 편의 결말을 모두 찾으면 받는 카드예요</div>${spv.map(c=>gxRow(c,true)).join('')}</section>`:'');
+}
+$('gxo').onclick=()=>{gxRender();$('gx').classList.add('on');$('gx').scrollTop=0};
+$('gx').onclick=e=>{const t=e.target;
+  if(t.id==='gxc'){$('gx').classList.remove('on');return}
+  const th=t.closest('.gx-th');if(th){CARDS.zoom(th.dataset.id);return}
+  if(t.dataset.f){gxF=t.dataset.f;const y=$('gx').scrollTop;gxRender();$('gx').scrollTop=y;return}
+  if(t.dataset.go){const el=$(t.dataset.go);if(el)el.scrollIntoView({behavior:'smooth',block:'start'})}};
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('gx').classList.contains('on')&&!$('cx-layer').classList.contains('on'))$('gx').classList.remove('on')},true);
 $('cp').onclick=()=>{$('out').select();try{navigator.clipboard.writeText($('out').value).then(()=>$('cm').textContent=' 복사했어요! ✓')}catch(e){document.execCommand('copy');$('cm').textContent=' 복사했어요! ✓'}};
 </script>
 </body>
