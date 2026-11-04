@@ -50,6 +50,7 @@ window.BOARD = (function () {
 .bd-c::after{content:'';position:absolute;inset:0;background:linear-gradient(115deg,transparent 25%,rgba(255,255,255,.35) 45%,rgba(255,200,255,.25) 55%,transparent 75%);mix-blend-mode:color-dodge;opacity:.3;animation:bdh 3.5s infinite;pointer-events:none}
 @keyframes bdh{50%{transform:translateX(40%)}}
 .bd-c:hover{transform:translateY(-12px) scale(1.07);z-index:3}
+.bd-c.sp{border-color:#D08AFF;box-shadow:0 0 16px rgba(208,138,255,.45)}.bd-c.sp .nm{color:#E3B8FF}
 .bd-c.glow{animation:bdg 1s infinite;border-color:#fff;transform:translateY(-14px);z-index:4}@keyframes bdg{50%{box-shadow:0 0 38px 8px rgba(255,194,71,1)}}
 .bd-c.dim{filter:grayscale(.85) brightness(.5);border-color:#4a4361}.bd-c.dim::after{display:none}
 .bd-c.used{filter:grayscale(1) brightness(.32);border-color:#4a4361;transform:translateY(10px);cursor:default}.bd-c.used::after{display:none}
@@ -78,11 +79,12 @@ body.bd-on #cbtn{display:none!important}
     return P;
   }
 
+  const rk = c => c.type === 'shield' ? 0 : c.type === 'special' ? 1 : 2;
   function handOf(ids) {
     const seen = new Set();
-    return (ids || []).filter(id => CARDS.ALL.includes(id) && !CARDS.isSp(id) && !seen.has(id) && seen.add(id))
+    return (ids || []).filter(id => CARDS.ALL.includes(id) && !seen.has(id) && seen.add(id))
       .map(id => { const d = CARDS.data(id); return { id, concept: d.concept, meaning: d.meaning, img: d.img, type: d.type, used: false } })
-      .sort((a, b) => (b.type === 'shield') - (a.type === 'shield'));
+      .sort((a, b) => rk(a) - rk(b));
   }
 
   // o: {teams:[{name,ids,color?}], len, deck:[사건카드], refill():[사건카드], timer(초), mode:'practice'|'class', title, onExit}
@@ -115,17 +117,19 @@ body.bd-on #cbtn{display:none!important}
 
     function status() {
       const t = T[cur], left = Math.max(0, Math.min(SHIELD_MAX, t.hand.filter(c => c.type === 'shield').length) - t.used);
-      $('#bd-st').innerHTML = (cls ? `<b>${esc(t.name)}</b> 차례 · ` : '') + `방패 <b>${left}</b>/${SHIELD_MAX} · 굴린 횟수 <b>${t.turns}</b>`;
+      $('#bd-st').innerHTML = (cls ? `<b>${esc(t.name)}</b> 차례 · ` : '') + `방패 <b>${left}</b>/${SHIELD_MAX} · ⭐ 특별 <b>${spLeft(t)}</b> · 굴린 횟수 <b>${t.turns}</b>`;
     }
+    const spLeft = t => t.hand.filter(c => c.type === 'special' && !c.used).length;
     const shieldLeft = t => Math.max(0, Math.min(SHIELD_MAX, t.hand.filter(c => c.type === 'shield').length) - t.used);
     function drawHand(glowConcept) {
       const t = T[cur], h = $('#bd-hand'), can = shieldLeft(t) > 0;
-      h.innerHTML = `<div class="lb">${cls ? '<b>' + esc(t.name) + '</b>의 ' : '내 '}방패 카드 — 사건의 개념과 같은 카드가 <b>반짝</b>여요</div>` + (t.hand.length ? t.hand.map((c, i) => {
-        const cl = c.used ? ' used' : c.type !== 'shield' ? ' dim' : (glowConcept && can && c.concept === glowConcept ? ' glow' : '');
-        return `<div class="bd-c${cl}" data-i="${i}" title="${esc(c.concept + ' — ' + c.meaning + (c.type !== 'shield' ? ' (방패가 아니라서 쓸 수 없어요)' : ''))}"><div class="im" style="--i:url(${c.img})"></div><div class="nm">${esc(c.concept)}</div></div>`;
+      h.innerHTML = `<div class="lb">${cls ? '<b>' + esc(t.name) + '</b>의 ' : '내 '}방패 카드 — 사건의 개념과 같은 카드가 <b>반짝</b>여요${t.hand.some(c => c.type === 'special') ? ' · ⭐ 특별 카드는 아무 문제나 한 번 막아 줘요' : ''}</div>` + (t.hand.length ? t.hand.map((c, i) => {
+        const cl = c.used ? ' used' : c.type === 'special' ? ' sp' + (glowConcept ? ' glow' : '') : c.type !== 'shield' ? ' dim' : (glowConcept && can && c.concept === glowConcept ? ' glow' : '');
+        return `<div class="bd-c${cl}" data-i="${i}" title="${esc(c.concept + ' — ' + c.meaning + (c.type === 'special' ? ' (특별 카드: 틀렸을 때 아무 문제나 한 번 막아 줘요)' : c.type !== 'shield' ? ' (방패가 아니라서 쓸 수 없어요)' : ''))}"><div class="im" style="--i:url(${c.img})"></div><div class="nm">${esc(c.concept)}</div></div>`;
       }).join('') : '<div class="none">모은 카드가 아직 없어요. (이야기를 체험하면 방패 카드를 얻어요)</div>');
       status();
     }
+    const spCard = () => T[cur].hand.findIndex(c => c.type === 'special' && !c.used);
     const handCard = (concept) => { const t = T[cur]; return t.hand.findIndex(c => c.type === 'shield' && !c.used && c.concept === concept) };
 
     function turn() {
@@ -171,22 +175,23 @@ body.bd-on #cbtn{display:none!important}
         return result(true, '좋은 선택! ' + GOOD + '칸 앞으로 ▶', opt, c);
       }
       t.wrong.push(c.k);
-      const hi = handCard(c.k), can = hi >= 0 && shieldLeft(t) > 0, why = opt ? '' : '시간이 다 됐어요. ';
-      if (can) {
+      const hi0 = handCard(c.k), hi = hi0 >= 0 && shieldLeft(t) > 0 ? hi0 : -1, si = spCard(), why = opt ? '' : '시간이 다 됐어요. ';
+      if (hi >= 0 || si >= 0) {
         drawHand(c.k); FX.play('mid');
-        const el = showQ(`<small>${esc(t.name)} · 개념 「${esc(c.k)}」</small><p class="qq">${why}아쉬운 선택이에요. 맞는 방패 카드(「${esc(c.k)}」)가 반짝여요!</p>${opt && opt.r ? `<p class="s">${esc(opt.r)}</p>` : ''}<button class="go" id="bd-use">🛡 방패 사용!</button><button class="go gh" id="bd-no">그냥 받기</button>`);
+        const el = showQ(`<small>${esc(t.name)} · 개념 「${esc(c.k)}」</small><p class="qq">${why}아쉬운 선택이에요. ${hi >= 0 ? `맞는 방패 카드(「${esc(c.k)}」)가 반짝여요!` : '맞는 방패는 없지만 ⭐ 특별 카드로 막을 수 있어요!'}</p>${opt && opt.r ? `<p class="s">${esc(opt.r)}</p>` : ''}${hi >= 0 ? '<button class="go" id="bd-use">🛡 방패 사용!</button>' : ''}${si >= 0 ? `<button class="go${hi >= 0 ? ' gh' : ''}" id="bd-sp">⭐ 특별 카드 사용!</button>` : ''}<button class="go gh" id="bd-no">그냥 받기</button>`);
         el.classList.add('b');
-        const use = () => { useShield(hi, c, opt); }, no = () => { penalty(c, opt, why) };
-        $('#bd-use').onclick = use; $('#bd-no').onclick = no; $('#bd-hand').onclick = e => { const x = e.target.closest('.bd-c'); if (x && +x.dataset.i === hi) use() };
+        const use = () => { useShield(hi, c, opt); }, usp = k => { useShield(typeof k === 'number' ? k : si, c, opt, true); }, no = () => { penalty(c, opt, why) };
+        if ($('#bd-use')) $('#bd-use').onclick = use; if ($('#bd-sp')) $('#bd-sp').onclick = usp; $('#bd-no').onclick = no;
+        $('#bd-hand').onclick = e => { const x = e.target.closest('.bd-c'); if (!x) return; const k = +x.dataset.i; if (k === hi) use(); else if (T[cur].hand[k].type === 'special' && !T[cur].hand[k].used) usp(k) };
         return;
       }
       penalty(c, opt, why, t.hand.some(x => x.type === 'shield' && !x.used) ? '맞는 방패가 없어요 (사건의 개념과 같은 방패 카드가 있어야 해요)' : '');
     }
-    function useShield(hi, c, opt) {
+    function useShield(hi, c, opt, sp) {
       const t = T[cur], e = $('#bd-hand').children[hi + 1]; $('#bd-hand').onclick = null;
-      t.hand[hi].used = true; t.used++; t.blocks++; FX.play('mid'); try { FX.confetti() } catch (x) {}
-      if (e) e.classList.add('fly'); big('🛡 방패 사용!'); clearQ(); busy = true;
-      setTimeout(() => { drawHand(); result(true, '방패로 막았어요! 뒤로 가지 않아요 🛡', opt, c) }, 950);
+      t.hand[hi].used = true; if (!sp) t.used++; t.blocks++; FX.play('mid'); try { FX.confetti() } catch (x) {}
+      if (e) e.classList.add('fly'); big(sp ? '⭐ 특별 카드!' : '🛡 방패 사용!'); clearQ(); busy = true;
+      setTimeout(() => { drawHand(); result(true, sp ? '특별 카드로 막았어요! 뒤로 가지 않아요 ⭐' : '방패로 막았어요! 뒤로 가지 않아요 🛡', opt, c) }, 950);
     }
     function penalty(c, opt, why, note) {
       const t = T[cur]; $('#bd-hand').onclick = null; t.bad++; t.pos = Math.max(0, t.pos - GOOD); FX.play('bad'); shake(); fx('💥 −' + GOOD + '칸', t.pos, true); placeAll();
@@ -197,7 +202,7 @@ body.bd-on #cbtn{display:none!important}
     $('#bd-hand').onclick = null;
     root.addEventListener('click', e => { // 질문 중 방패가 아닌 카드를 누르면 흔들림 + 안내
       const x = e.target.closest('.bd-c'); if (!x || !q || e.target.closest('.bd-q')) return;
-      if (x.classList.contains('glow')) { x.classList.add('sh'); setTimeout(() => x.classList.remove('sh'), 400); fx('틀렸을 때 쓸 수 있어요', T[cur].pos); return }
+      if (x.classList.contains('glow') || x.classList.contains('sp')) { x.classList.add('sh'); setTimeout(() => x.classList.remove('sh'), 400); fx('틀렸을 때 쓸 수 있어요', T[cur].pos); return }
       x.classList.add('sh'); setTimeout(() => x.classList.remove('sh'), 400); fx('이 사건엔 맞는 방패가 아니에요', T[cur].pos, true);
     });
     function next() { cur = (cur + 1) % T.length; turn() }
