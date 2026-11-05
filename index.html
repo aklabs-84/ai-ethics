@@ -147,6 +147,16 @@ body{background:var(--bg);color:var(--ink);font:500 22px/1.7 var(--font);overflo
 .menub{position:fixed;bottom:20px;right:20px;z-index:7;background:var(--gold);border:0;border-radius:10px;font:800 18px var(--font);color:#1a1200;cursor:pointer;padding:13px 22px;box-shadow:0 4px 18px rgba(0,0,0,.5);transition:transform .15s}.menub:hover{transform:translateY(-2px)}
 .menub::before{content:'☰ '}
 
+/* AKLABS 공통 푸터 (이 앱 색: 어두운 보라 바탕) */
+.aklabs-foot{--f-bg:rgba(21,18,31,.92);--f-ink:#F4F0E8;--f-sub:#A9A3B8;--f-line:#3A3450;--f-accent:#FFC247;
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0 20px;padding:2px 18px;border-top:1px solid var(--f-line);background:var(--f-bg);font:500 14px/1.4 var(--font,Pretendard,system-ui,sans-serif);color:var(--f-sub);user-select:none}
+.aklabs-foot b{color:var(--f-ink);font-weight:700;letter-spacing:.06em}
+.aklabs-foot nav{display:flex;gap:0 16px;flex-wrap:wrap;margin:0;padding:0;border:0}
+.aklabs-foot a{color:var(--f-sub);text-decoration:none;padding:6px 0;border-bottom:1px solid transparent}
+.aklabs-foot a:hover,.aklabs-foot a:focus-visible{color:var(--f-accent);border-bottom-color:var(--f-accent)}
+@media (max-width:640px){.aklabs-foot{padding:2px 10px;justify-content:center;gap:0 14px}}
+.aklabs-foot{position:fixed;left:0;right:0;bottom:0;z-index:40}body.bd-on .aklabs-foot{display:none}
+.scr{bottom:40px}.snd{bottom:52px}.next{bottom:52px}.menub{bottom:52px}body.bd-on .scr{bottom:0}body.bd-on .snd,body.bd-on .next,body.bd-on .menub{bottom:14px}
 </style>
 </head>
 <body>
@@ -406,5 +416,6 @@ function boot(){
 }
 boot();
 </script>
+<footer class="aklabs-foot"><b>AKLABS</b><nav aria-label="관련 사이트"><a href="https://classlog-ai.vercel.app/" target="_blank" rel="noopener">클래스로그AI</a><a href="https://ai-service-hub.vercel.app/" target="_blank" rel="noopener">아크의 실험실</a></nav></footer>
 </body>
 </html>
