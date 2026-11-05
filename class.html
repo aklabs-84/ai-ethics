@@ -77,6 +77,7 @@ a.gl{color:var(--ai);font-weight:700}
 <h2>① 학생 제출글 붙여넣기 <small>클래스로그 AI에서 학생들의 결과 제출글을 전부 복사해 한 번에 붙여넣어요</small></h2>
 <div class="how"><ol><li>클래스로그 AI 선생님 화면에서 학생들이 낸 글을 복사해요(여러 명 한꺼번에 OK).</li><li>아래 칸에 붙여넣고 <b>읽기</b>를 눌러요. 순서가 섞여 있어도, 같은 글을 두 번 붙여도 괜찮아요.</li><li>나중에 더 낸 학생이 있으면 <b>이어서 붙여넣고 다시 읽기</b>를 눌러요.</li></ol></div>
 <textarea id="in" rows="6" placeholder="[AI 사건 체험관 제출] … 처럼 시작하는 글을 여기에 붙여넣어요"></textarea>
+<div id="ld" hidden style="margin:10px 0;padding:12px;border:2px dashed #999;border-radius:10px"><b>☁️ 제출함에서 자동으로 불러오기</b><br>입장 코드 <input id="ldc" style="padding:8px;font-size:16px;width:130px"> 선생님 비밀번호 <input id="ldk" type="password" style="padding:8px;font-size:16px;width:150px"> <button class="btn" id="ldb">불러와서 읽기</button> <span id="ldm"></span></div>
 <button class="btn" id="rd">읽기</button><span id="msg"></span>
 
 <h2>② 모둠 확인 <small id="cnt"></small></h2>
@@ -97,6 +98,7 @@ a.gl{color:var(--ai);font-weight:700}
 <script src="data/story1.js"></script>
 <script src="data/story2.js"></script>
 <script src="data/story3.js"></script>
+<script src="config.js"></script>
 <script src="fx.js"></script>
 <script src="cards.js"></script>
 <script src="deck.js"></script>
@@ -132,6 +134,18 @@ function render(){
     ${t.people.size?`<div class="st" style="margin:4px 0 0 22px">조원별 카드: ${by.length?by.map(([w,c])=>esc(w)+' '+c+'장').join(' · ')+' → <b>합치면 '+t.ids.size+'장</b>(겹치는 카드는 한 장으로 세요)':'<span class="z">카드 코드가 없어요. 학생이 「오늘 수업 제출하기」 글 전체를 냈는지 봐 주세요</span>'}${sh?' · 방패 '+sh+'장 중 <b>최대 3번</b> 사용':''}</div>`:''}
     ${t.cards.length?`<details><summary>사건카드 보기 · 이상하면 체크를 풀어요</summary>${t.cards.map((c,j)=>`<label class="cd${c._off?' off':''}"><input type="checkbox" data-n="${esc(n)}" data-j="${j}" ${c._off?'':'checked'}><div><b>${esc(c.k)}</b> · ${esc(c.s)}<br><b>${esc(c.q)}</b><br><span class="g">✓ ${esc(c.o.find(o=>o.ok).t)}</span><br><span class="b">✗ ${esc(c.o.find(o=>!o.ok).t)}</span></div></label>`).join('')}</details>`:''}</div>`}).join('')||'<p style="color:var(--sub)">①에서 글을 읽으면 모둠이 여기에 나와요.</p>';
 }
+if(window.CONFIG&&CONFIG.apiUrl){$('ld').hidden=false;try{$('ldc').value=localStorage.getItem('aiethics.tcode.v1')||''}catch(e){}}
+$('ldb').onclick=async()=>{
+  const c=$('ldc').value.trim(),k=$('ldk').value,m=$('ldm');
+  if(!c||!k){m.textContent=' 입장 코드와 비밀번호를 적어 주세요.';return}
+  m.textContent=' 불러오는 중…';
+  try{const r=await fetch(CONFIG.apiUrl+'/list',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({entryCode:c,teacherKey:k})});
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok){m.textContent=' '+(d.error||'불러오지 못했어요');return}
+    try{localStorage.setItem('aiethics.tcode.v1',c)}catch(e){}
+    $('in').value=d.items.map(x=>x.text).join('\n\n');
+    m.textContent=' ✅ '+d.count+'명 제출을 불러왔어요';$('rd').click()}
+  catch(e){m.textContent=' 인터넷 연결을 확인해 주세요.'}};
 $('rd').onclick=()=>{
   bad=0;subs=0;
   // 다시 읽을 때 체크 해제 상태를 지키기 위해 처음부터 다시 만든다

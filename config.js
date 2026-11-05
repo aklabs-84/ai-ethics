@@ -1,1 +1,1 @@
-window.CONFIG = { classlogUrl: '' };  // 클래스로그 제출 주소(배포 후 선생님이 넣기)
+window.CONFIG = { classlogUrl: '', apiUrl: 'https://ai-ethics-submit.mosebb.workers.dev' };  // classlogUrl: 클래스로그 주소 / apiUrl: 제출 보관함(Worker) 주소
