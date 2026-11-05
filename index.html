@@ -382,6 +382,13 @@ $('wipe').onclick=()=>{if(confirm('이 노트북에 저장된 카드, 느낀 점
 /* ---------- 시작 ---------- */
 function showWho(){const w=$('who');if(!ME){w.hidden=true;return}w.textContent='🙋 '+ME.name+' · '+ME.group+'모둠'+(ME.leader?' · 모둠장':'');w.hidden=false}
 function boot(){
+  /* 클래스로그에서 열면 주소에 ?studentName=이 붙어 온다 → 이름은 그걸로 채우고 잠근다 */
+  let CLN='';try{CLN=(new URLSearchParams(location.search).get('studentName')||'').trim().slice(0,40)}catch(e){}
+  if(CLN){
+    if(ME&&ME.name!==CLN){ME=null;jset('aiethics.me.v1',null)}  /* 다른 학생이 쓰던 노트북이면 반·모둠도 새로 받는다 */
+    $('wn').value=CLN;$('wn').readOnly=true;$('wn').title='클래스로그에서 가져온 이름이에요';
+    const f=$('wn').closest('label');if(f&&!$('wnhint')){const s=document.createElement('small');s.id='wnhint';s.textContent='✔ 클래스로그에서 가져온 이름이에요';s.style.cssText='display:block;margin-top:4px;color:#7A7490;font-size:12px';f.appendChild(s)}
+  }
   startStory(0);showWho();
   $('wgo').onclick=()=>{
     const n=$('wn').value.trim(),c=$('wc').value.trim(),g=$('wg').value.trim().replace(/[^0-9]/g,'');
