@@ -8,23 +8,24 @@ window.BOARD = (function () {
   const COLORS = ['#FFC247', '#6EE7D0', '#FF8FB1', '#8FB4FF', '#C9A0FF', '#FF9A5C'];
 
   const css = `
-.bd{--tkb:64px;--tk:64px;--cw:78px;position:relative;display:flex;flex-direction:column;height:calc(100vh - 36px);min-height:620px;color:#F4F0E8;font:500 18px/1.5 var(--font,Pretendard,sans-serif);text-align:left;user-select:none}
-.bd.cls{--tkb:70px;--tk:70px;--cw:100px;font-size:21px}
-.bd-top{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:4px 4px 8px}
+.bd{--tkb:76px;--tk:76px;--cw:78px;position:relative;display:flex;flex-direction:column;height:calc(100vh - 36px);min-height:620px;color:#F4F0E8;font:500 18px/1.5 var(--font,Pretendard,sans-serif);text-align:left;user-select:none}
+.bd.cls{--tkb:88px;--tk:88px;--cw:100px;font-size:21px}
+.bd-top{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:0 4px 6px}
 .bd-top h2{font:400 clamp(26px,3vw,36px) var(--head,sans-serif);color:#FFC247}
 .bd-top .st{color:#A9A3B8;font-size:16px}.bd-top .st b{color:#FFC247}.bd-top a{cursor:pointer;font-weight:700;color:#F4F0E8;white-space:nowrap;border-bottom:2px solid transparent}.bd-top a:hover{border-color:#FFC247;color:#FFC247}
-.bd-lg{display:flex;flex-wrap:wrap;gap:6px 10px;padding:0 4px 8px}
-.bd-lg span{display:flex;align-items:center;gap:8px;padding:4px 14px 4px 5px;border-radius:10px;border:2px solid #3A3450;background:#1c1830;color:#A9A3B8;font-weight:700;font-size:.82em;line-height:1.2;transition:border-color .2s,background .2s}
+.bd-lg{display:flex;flex-wrap:wrap;gap:4px 8px;padding:0 4px 6px}
+.bd-lg span{display:flex;align-items:center;gap:8px;padding:2px 12px 2px 4px;border-radius:10px;border:2px solid #3A3450;background:#1c1830;color:#A9A3B8;font-weight:700;font-size:.82em;line-height:1.2;transition:border-color .2s,background .2s}
 .bd-lg i{display:grid;place-items:center;width:1.6em;height:1.6em;border-radius:50%;background:var(--c);color:#15121F;font:800 .9em var(--font,sans-serif);font-style:normal}
 .bd-lg b{color:#F4F0E8;font-weight:800}.bd-lg em{font-style:normal;color:#A9A3B8}
 .bd-lg span.on{border-color:var(--c);background:#2a2442;box-shadow:0 0 14px var(--c)}.bd-lg span.on em{color:var(--c)}
 .bd-map{flex:1;position:relative;min-height:0;border-radius:16px;background:radial-gradient(ellipse at 50% 30%,#241d3a,#15121F 75%);border:1px solid #3A3450;overflow:hidden}
 .bd-map svg{position:absolute;inset:0;width:100%;height:100%}
-.bd-t{position:absolute;width:var(--tt,50px);height:var(--tt,50px);margin:calc(var(--tt,50px)/-2) 0 0 calc(var(--tt,50px)/-2);border-radius:50%;display:grid;place-items:center;font:400 17px var(--head,sans-serif);background:#241d36;border:3px solid #4a4361;color:#8d86a8;box-shadow:0 0 0 4px rgba(0,0,0,.25)}
-.bd.cls .bd-t{--tt:58px;font-size:20px}
+.bd-t{position:absolute;width:var(--tt,50px);height:var(--tt,50px);margin:calc(var(--tt,50px)/-2) 0 0 calc(var(--tt,50px)/-2);border-radius:50%;display:grid;place-items:center;font:400 20px var(--head,sans-serif);background:#241d36;border:3px solid #4a4361;color:#8d86a8;box-shadow:0 0 0 4px rgba(0,0,0,.25)}
+.bd.cls .bd-t{--tt:70px;font-size:24px}
+.bd-t{--tt:60px}
 .bd-t.rest{background:#1d3a38;border-color:#6EE7D0;color:#6EE7D0;box-shadow:0 0 18px rgba(110,231,208,.45)}
 .bd-t.st{border-color:#FFC247;color:#FFC247}
-.bd-t.fin{--tt:84px;background:linear-gradient(135deg,#ffd36b,#ff9a3c);border-color:#fff3b8;color:#3a2400;font-size:34px;box-shadow:0 0 36px rgba(255,194,71,.8);animation:bdp 1.6s infinite}
+.bd-t.fin{--tt:96px;background:linear-gradient(135deg,#ffd36b,#ff9a3c);border-color:#fff3b8;color:#3a2400;font-size:34px;box-shadow:0 0 36px rgba(255,194,71,.8);animation:bdp 1.6s infinite}
 @keyframes bdp{50%{box-shadow:0 0 62px rgba(255,194,71,1)}}
 .bd-tk{position:absolute;width:var(--tk);height:var(--tk);margin:calc(var(--tk) * -1.35) 0 0 calc(var(--tk) / -2);z-index:5;transition:left .45s cubic-bezier(.3,1.4,.5,1),top .45s cubic-bezier(.3,1.4,.5,1);filter:drop-shadow(0 8px 6px rgba(0,0,0,.55))}
 .bd-tk i{display:block;width:100%;height:100%;border-radius:50%;background:url(../ref-main-character.png) center 18%/cover,#241d36;border:4px solid var(--c);box-shadow:0 0 22px var(--c);animation:bdb 1s infinite}
@@ -41,8 +42,9 @@ window.BOARD = (function () {
 .bd-q{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(680px,90%);max-height:94%;overflow:auto;background:rgba(21,18,31,.95);border:2px solid #FFC247;border-radius:16px;padding:22px 28px;box-shadow:0 20px 60px rgba(0,0,0,.7);z-index:8;animation:bdq .3s}
 @keyframes bdq{from{opacity:0;transform:translate(-50%,-46%)}}
 .bd.cls .bd-q{width:min(860px,90%);padding:28px 34px}
-.bd-q.big{position:fixed;left:50%;top:8px;transform:translateX(-50%);width:min(900px,96vw);max-height:calc(100vh - 160px);z-index:12;animation:bdq2 .3s}
-.bd.cls .bd-q.big{width:min(1000px,96vw)}
+.bd-q.big{box-sizing:border-box;position:fixed;left:50%;top:8px;transform:translateX(-50%);width:min(1200px,96vw);max-height:calc(100vh - 120px);z-index:12;animation:bdq2 .3s}
+.bd.cls .bd-q.big{width:min(1320px,96vw);padding:34px 44px}
+.bd-q.big{padding:30px 40px}.bd-q.big small{font-size:1.05em}.bd-q.big .s{font-size:1.18em;line-height:1.65}.bd-q.big .qq{font-size:clamp(28px,3.2vw,42px)}.bd-q.big .o{font-size:1.15em;padding:18px 24px;margin-top:12px}
 @keyframes bdq2{from{opacity:0;transform:translate(-50%,12px)}}
 .bd-q small{color:#FFC247;font-weight:800;letter-spacing:.05em}.bd-q .s{margin:6px 0 8px;color:#e6e0f2;line-height:1.6}.bd-q .qq{font:400 clamp(22px,2.6vw,30px)/1.4 var(--head,sans-serif);margin:6px 0 12px;color:#fff}
 .bd-q .o{display:block;width:100%;text-align:left;font:600 1em/1.4 var(--font,sans-serif);color:#fff;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.28);border-radius:10px;padding:13px 18px;margin-top:10px;cursor:pointer;transition:border-color .2s,background .2s}
@@ -50,6 +52,8 @@ window.BOARD = (function () {
 .bd-q.g{border-color:#6EE7D0}.bd-q.b{border-color:#FF6B6B}.bd-q .go{margin-top:14px;font:700 1em var(--font,sans-serif);background:#FFC247;color:#15121F;border:0;border-radius:10px;padding:12px 28px;cursor:pointer;margin-right:10px}.bd-q .go.gh{background:none;color:#F4F0E8;border:1.5px solid #3A3450}
 .bd-q .good{color:#6EE7D0}
 .bd-tm{height:6px;background:#3A3450;border-radius:3px;margin:8px 0 2px;overflow:hidden}.bd-tm i{display:block;height:100%;background:#FFC247;transform-origin:left}
+.bd-ht{align-self:center;margin:6px 0 0;cursor:pointer;font:700 16px var(--font,sans-serif);color:#F4F0E8;background:#1c1830;border:2px solid #3A3450;border-radius:10px;padding:8px 18px;min-height:42px}.bd-ht:hover{border-color:#FFC247;color:#FFC247}.bd-ht b{color:#FFC247}.bd-ht.hot{border-color:#FFC247;animation:bdg 1s infinite}
+.bd-hand.fold{display:none}
 .bd-hand{display:flex;align-items:flex-end;justify-content:center;gap:10px;min-height:calc(var(--cw) * 1.4 + 30px);padding:26px 6px 4px;position:relative;flex-wrap:wrap}
 .bd-hand .lb{position:absolute;left:6px;top:4px;color:#A9A3B8;font-size:15px}.bd-hand .lb b{color:#FFC247}
 .bd-hand .none{color:#6f6988;font-size:16px;padding-bottom:24px}
@@ -74,7 +78,7 @@ window.BOARD = (function () {
 .bd-res table{width:100%;border-collapse:collapse;font-size:19px}.bd-res th{color:#A9A3B8;font-weight:600;text-align:left;padding:8px 10px;border-bottom:1px solid #3A3450}.bd-res td{padding:12px 10px;border-bottom:1px solid #3A3450}.bd-res tr.w td{color:#FFC247;font-weight:800}
 .bd-res .rv{margin:16px 0;padding:14px 18px;background:rgba(255,194,71,.1);border-left:5px solid #FFC247;color:#e6e0f2}.bd-res .rv b{color:#FFC247}
 .bd-res .btn{font:700 20px var(--font,sans-serif);background:#FFC247;color:#15121F;border:0;border-radius:10px;padding:14px 34px;cursor:pointer;margin:6px 10px 0 0}
-@media (max-width:640px){.bd{--tkb:50px;--tk:50px;--cw:50px;font-size:16px}.bd-hand{flex-wrap:nowrap;gap:5px;overflow-x:auto}.bd-q.big{padding:16px 16px}.bd-q .qq{font-size:20px}.bd-q .o{padding:11px 14px;margin-top:8px}.bd-tk b{font-size:12px}.bd-t{--tt:36px;font-size:13px;border-width:2px}.bd-t.fin{--tt:54px;font-size:22px}.bd-dice button{width:60px;height:60px;font-size:34px}.bd-dice{right:8px;top:8px;max-width:110px}.bd-dice span{font-size:12px}.bd-q{padding:14px 16px}}
+@media (max-width:640px){.bd{--tkb:50px;--tk:50px;--cw:50px;font-size:16px}.bd-q.big .s{font-size:1em}.bd-q.big .o{padding:12px 14px;font-size:1em}.bd-q.big{padding:16px 16px}.bd-ht{font-size:14px;padding:6px 12px}.bd-hand{flex-wrap:nowrap;gap:5px;overflow-x:auto}.bd-q.big{padding:16px 16px}.bd-q .qq{font-size:20px}.bd-q .o{padding:11px 14px;margin-top:8px}.bd-tk b{font-size:12px}.bd-t{--tt:36px;font-size:13px;border-width:2px}.bd-t.fin{--tt:54px;font-size:22px}.bd-dice button{width:60px;height:60px;font-size:34px}.bd-dice{right:8px;top:8px;max-width:110px}.bd-dice span{font-size:12px}.bd-q{padding:14px 16px}}
 body.bd-on #cbtn{display:none!important}
 @media (prefers-reduced-motion:reduce){.bd *{animation:none!important}}`;
 
@@ -116,7 +120,7 @@ body.bd-on #cbtn{display:none!important}
       <div class="bd-map" id="bd-map"><svg viewBox="0 0 1000 600" preserveAspectRatio="none"><path d="${d}" fill="none" stroke="#2c2542" stroke-width="34" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/><path d="${d}" fill="none" stroke="#4a4361" stroke-width="3" stroke-dasharray="3 12" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>
       ${tiles}${T.map((t, i) => `<div class="bd-tk" id="bd-tk${i}" style="--c:${t.color}"><i></i>${T.length > 1 ? `<em>${esc(t.name)}</em><b>${i + 1}</b>` : ''}</div>`).join('')}
       <div class="bd-dice"><button id="bd-dc">🎲</button><span id="bd-dl"></span></div></div>
-      <div class="bd-hand" id="bd-hand"></div></div>`;
+      <button type="button" class="bd-ht" id="bd-ht"></button><div class="bd-hand fold" id="bd-hand"></div></div>`;
     const $ = s => root.querySelector(s), map = $('#bd-map');
     const placeAll = () => {
       const grp = {}; T.forEach((t, i) => (grp[t.pos] = grp[t.pos] || []).push(i)); // 같은 칸에 모인 말은 옆으로 나란히
@@ -129,6 +133,15 @@ body.bd-on #cbtn{display:none!important}
       });
     };
     window.addEventListener('resize', () => { if (map.isConnected) placeAll() });
+    if (window.ResizeObserver) new ResizeObserver(() => { if (map.isConnected) placeAll() }).observe(map); // 카드 목록을 접고 펼쳐 지도 높이가 바뀌어도 말 위치 다시 맞추기
+    let folded = true, autoOpen = false;
+    const setFold = (v, auto) => { folded = v; autoOpen = !!auto && !v; $('#bd-hand').classList.toggle('fold', v); barUpd() };
+    function barUpd() {
+      const t = T[cur], b = $('#bd-ht'); if (!b) return;
+      b.innerHTML = `🃏 ${cls ? '<b>' + esc(t.name) + '</b>의 ' : '내 '}카드 ${folded ? '펼치기 ▲' : '접기 ▼'} · 방패 <b>${shieldLeft(t)}</b>/${SHIELD_MAX} · ⭐ <b>${spLeft(t)}</b>`;
+      b.classList.toggle('hot', autoOpen);
+    }
+    $('#bd-ht').onclick = () => setFold(!folded, false);
     const fx = (txt, pos, bad) => { const e = document.createElement('div'); e.className = 'bd-fx' + (bad ? ' bad' : ''); e.textContent = txt; e.style.left = Math.max(2, P[pos].x / 10 - 6) + '%'; e.style.top = Math.max(2, P[pos].y / 6 - 22) + '%'; map.appendChild(e); setTimeout(() => e.remove(), 1400) };
     const big = txt => { const e = document.createElement('div'); e.className = 'bd-big'; e.textContent = txt; map.appendChild(e); setTimeout(() => e.remove(), 1300) };
     const shake = () => { map.classList.remove('shk'); void map.offsetWidth; map.classList.add('shk') };
@@ -137,7 +150,7 @@ body.bd-on #cbtn{display:none!important}
 
     function status() {
       const t = T[cur], left = Math.max(0, Math.min(SHIELD_MAX, t.hand.filter(c => c.type === 'shield').length) - t.used);
-      $('#bd-st').innerHTML = (cls ? `<b>${esc(t.name)}</b> 차례 · ` : '') + `방패 <b>${left}</b>/${SHIELD_MAX} · ⭐ 특별 <b>${spLeft(t)}</b> · 굴린 횟수 <b>${t.turns}</b>`;
+      barUpd(); $('#bd-st').innerHTML = (cls ? `<b>${esc(t.name)}</b> 차례 · ` : '') + `방패 <b>${left}</b>/${SHIELD_MAX} · ⭐ 특별 <b>${spLeft(t)}</b> · 굴린 횟수 <b>${t.turns}</b>`;
     }
     const spLeft = t => t.hand.filter(c => c.type === 'special' && !c.used).length;
     const shieldLeft = t => Math.max(0, Math.min(SHIELD_MAX, t.hand.filter(c => c.type === 'shield').length) - t.used);
@@ -154,7 +167,7 @@ body.bd-on #cbtn{display:none!important}
 
     function turn() {
       if (over) return; busy = false; clearQ(); const t = T[cur];
-      drawHand(); placeAll();
+      if (autoOpen) setFold(true); drawHand(); placeAll();
       const b = $('#bd-dc'); b.disabled = false; b.textContent = '🎲'; $('#bd-dl').textContent = cls ? t.name + ' 차례!\n눌러서 굴려요' : '눌러서 굴려요';
       $('#bd-dl').style.whiteSpace = 'pre-line';
       if (cls) big(t.name + ' 차례');
@@ -177,7 +190,7 @@ body.bd-on #cbtn{display:none!important}
       const t = T[cur], c = take(t), os = shuffle(c.o); q = { c, os };
       const el = showQ(`<small>${esc(c.g)} · 개념 「${esc(c.k)}」${cls ? ' · ' + esc(t.name) + ' 차례' : ''}</small><p class="s">${esc(c.s)}</p><p class="qq">${esc(c.q)}</p>${os.map((x, i) => `<button class="o" data-i="${i}">${esc(x.t)}</button>`).join('')}${o.timer ? '<div class="bd-tm"><i id="bd-tmi"></i></div>' : ''}`);
       el.classList.add('big'); FX.play('show'); drawHand(c.k);
-      { const h = $('#bd-hand'); if (h) el.style.maxHeight = Math.max(260, h.getBoundingClientRect().top - 16) + 'px' }
+      { const h = $('#bd-ht'); if (h) el.style.maxHeight = Math.max(260, h.getBoundingClientRect().top - 12) + 'px' }
       el.onclick = e => { const b = e.target.closest('.o'); if (b) answer(os[+b.dataset.i]) };
       if (o.timer) {
         const t0 = Date.now(), bar = $('#bd-tmi');
@@ -198,7 +211,7 @@ body.bd-on #cbtn{display:none!important}
       t.wrong.push(c.k);
       const hi0 = handCard(c.k), hi = hi0 >= 0 && shieldLeft(t) > 0 ? hi0 : -1, si = spCard(), why = opt ? '' : '시간이 다 됐어요. ';
       if (hi >= 0 || si >= 0) {
-        drawHand(c.k); FX.play('mid');
+        setFold(false, true); drawHand(c.k); FX.play('mid');
         const el = showQ(`<small>${esc(t.name)} · 개념 「${esc(c.k)}」</small><p class="qq">${why}아쉬운 선택이에요. ${hi >= 0 ? `맞는 방패 카드(「${esc(c.k)}」)가 반짝여요!` : '맞는 방패는 없지만 ⭐ 특별 카드로 막을 수 있어요!'}</p>${opt && opt.r ? `<p class="s">${esc(opt.r)}</p>` : ''}${hi >= 0 ? '<button class="go" id="bd-use">🛡 방패 사용!</button>' : ''}${si >= 0 ? `<button class="go${hi >= 0 ? ' gh' : ''}" id="bd-sp">⭐ 특별 카드 사용!</button>` : ''}<button class="go gh" id="bd-no">그냥 받기</button>`);
         el.classList.add('b');
         const use = () => { useShield(hi, c, opt); }, usp = k => { useShield(typeof k === 'number' ? k : si, c, opt, true); }, no = () => { penalty(c, opt, why) };
