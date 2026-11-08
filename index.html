@@ -216,7 +216,7 @@ body{background:var(--bg);color:var(--ink);font:500 22px/1.7 var(--font);overflo
   <div id="sbbody"></div>
   <div class="sb"><h3>우리 모둠의 약속 한 줄</h3><p>오늘 배운 것으로 AI를 쓸 때 우리 모둠이 지킬 약속을 한 줄로 써요.</p><textarea id="sbp" rows="2" placeholder="예) 우리는 AI가 알려 준 건 꼭 한 번 더 확인하고, 쓴 건 솔직하게 밝힌다."></textarea></div>
   <div class="acts"><button class="btn" id="sbmk">제출 내용 만들기</button></div>
-  <div class="out" id="sbout" hidden><p>내가 쓴 느낀 점과 약속이에요. 맞는지 읽어 보고, 아래에서 바로 제출하거나 복사해서 클래스로그 AI의 「결과 제출하기」에 붙여넣어 주세요.</p><textarea id="sbt" rows="12" readonly></textarea><button class="btn ghost" id="sbcp">복사하기</button> <span class="ok" id="sbok"></span>
+  <div class="out" id="sbout" hidden><p>내가 쓴 느낀 점과 약속이에요. 맞는지 읽어 보고, 아래에서 바로 제출하거나 복사해서 클래스로그 AI의 「결과 제출하기」에 붙여넣어 주세요.</p><img id="sbimg" alt="제출될 카드 미리보기" style="display:none;width:100%;max-width:640px;border:1px solid var(--line);margin:0 0 12px"><textarea id="sbt" rows="12" readonly></textarea><button class="btn ghost" id="sbcp">복사하기</button> <span class="ok" id="sbok"></span>
   <div id="sbsend" hidden style="margin-top:16px;padding-top:14px;border-top:1px dashed var(--line,#ccc)"><p><b>복사하지 않고 바로 제출할 수도 있어요.</b> 입장 코드는 선생님이 알려 주세요.</p><input id="sbcode" placeholder="입장 코드" style="padding:10px;font-size:16px;width:160px"> <button class="btn" id="sbgo">바로 제출하기</button> <span id="sbmsg"></span></div>
   <p id="sblink" hidden style="margin-top:14px"><a class="x" id="sbopen" target="_blank">클래스로그 열기 ▸</a></p></div>
 </div></div>
@@ -392,11 +392,37 @@ function renderSubmit(){
   $('sbbody').oninput=e=>{if(e.target.dataset.i!=null){PROG.feel[+e.target.dataset.i]=e.target.value;jset('aiethics.prog.v1',PROG)}};
   $('sbp').oninput=()=>{PROG.promise=$('sbp').value;jset('aiethics.prog.v1',PROG)};
 }
-$('sbmk').onclick=()=>{
+/* 제출 카드 그림: 느낀 점 3개 + 모둠 약속을 발표 화면용 그림 한 장으로 그린다 */
+let CARD='';
+async function makeCard(){
+  try{await document.fonts.load('900 40px "Black Han Sans"')}catch(e){}
+  const W=1280,P=72,TW=W-P*2,FB='"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif',FH='"Black Han Sans",'+FB;
+  const cv=document.createElement('canvas'),g=cv.getContext('2d');
+  const wrap=(txt,font)=>{g.font=font;const out=[];String(txt).split('\n').forEach(p=>{let l='';for(const ch of p){if(g.measureText(l+ch).width>TW&&l){out.push(l);l=ch}else l+=ch}out.push(l)});return out};
+  const secs=SS.map((s,i)=>({k:`${s.no}편 ${s.series.split('· ')[1]} — 느낀 점`,v:PROG.feel[i]||'(적지 않았어요)'}));
+  secs.push({k:'우리 모둠의 약속',v:PROG.promise||'(적지 않았어요)',big:1});
+  const BF='500 30px '+FB,LH=46;let y=P+120;
+  secs.forEach(s=>{s.L=wrap(s.v,s.big?'700 34px '+FB:BF);y+=48+s.L.length*(s.big?52:LH)+36});
+  const H=Math.max(720,Math.min(4000,y+P-10));cv.width=W;cv.height=H;
+  g.fillStyle='#15121F';g.fillRect(0,0,W,H);
+  g.fillStyle='#FFC247';g.fillRect(P,P-8,64,6);
+  g.textBaseline='top';g.font='900 54px '+FH;g.fillStyle='#F4F0E8';g.fillText('조심조심 AI',P,P+8);
+  g.font='600 28px '+FB;g.fillStyle='#A9A3B8';g.fillText(`${ME.group}모둠 · ${ME.name}`,P,P+78);
+  y=P+120;
+  secs.forEach(s=>{
+    g.fillStyle='#3A3450';g.fillRect(P,y,TW,2);y+=22;
+    g.font='700 26px '+FB;g.fillStyle='#FFC247';g.fillText(s.k,P,y);y+=48;
+    g.font=s.big?'700 34px '+FB:BF;g.fillStyle=s.big?'#6EE7D0':'#F4F0E8';
+    s.L.forEach(l=>{g.fillText(l,P,y);y+=s.big?52:LH});y+=14});
+  let d=cv.toDataURL('image/png');if(d.length>4400000)d=cv.toDataURL('image/jpeg',0.9);
+  return d;
+}
+$('sbmk').onclick=async()=>{
   let t='';
   SS.forEach((s,i)=>{t+=`${i?'\n':''}■ ${s.no}편 ${s.series.split('· ')[1]} — 느낀 점\n${PROG.feel[i]||'(적지 않았어요)'}\n`});
   t+=`\n■ 우리 모둠의 약속\n${PROG.promise||'(적지 않았어요)'}\n`;
   $('sbt').value=t;$('sbout').hidden=false;
+  try{CARD=await makeCard();$('sbimg').src=CARD;$('sbimg').style.display='block'}catch(e){CARD=''}
   if(window.CONFIG&&CONFIG.apiUrl){$('sbsend').hidden=false;let c='';try{c=new URLSearchParams(location.search).get('entryCode')||localStorage.getItem('aiethics.code.v1')||''}catch(e){}$('sbcode').value=c}
   if(window.CONFIG&&CONFIG.classlogUrl){$('sblink').hidden=false;$('sbopen').href=CONFIG.classlogUrl}
   $('sbout').scrollIntoView({behavior:'smooth'});
@@ -405,7 +431,7 @@ $('sbgo').onclick=async()=>{
   const code=$('sbcode').value.trim(),m=$('sbmsg');
   if(!code){m.textContent=' 입장 코드를 적어 주세요.';return}
   $('sbgo').disabled=true;m.textContent=' 보내는 중…';
-  try{const r=await fetch(CONFIG.apiUrl+'/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({entryCode:code,studentName:ME.name,studentId:ME.group+'모둠-'+ME.name,textContent:$('sbt').value})});
+  try{const r=await fetch(CONFIG.apiUrl+'/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({entryCode:code,studentName:ME.name,studentId:ME.group+'모둠-'+ME.name,textContent:$('sbt').value,imageData:CARD})});
     const d=await r.json().catch(()=>({}));
     if(r.ok){try{localStorage.setItem('aiethics.code.v1',code)}catch(e){}m.textContent=' ✅ 제출했어요! 다시 눌러도 덮어써져요.'}else m.textContent=' '+(d.error||'제출에 실패했어요. 복사해서 붙여넣기로 내 주세요.')}
   catch(e){m.textContent=' 인터넷 연결을 확인하거나, 복사해서 붙여넣기로 내 주세요.'}
