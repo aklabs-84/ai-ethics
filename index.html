@@ -29,7 +29,7 @@ body{background:var(--bg);color:var(--ink);font:500 22px/1.7 var(--font);overflo
 .who{display:flex;align-items:center;justify-content:center;gap:14px;height:min(64px,8vh);margin-bottom:min(10px,1.4vh);font-size:clamp(18px,1.6vw,22px);font-weight:800;letter-spacing:.06em;color:var(--gold)}
 .who.ai{color:var(--ai)}.who.fr{color:#CDBBFF}
 .av{width:min(56px,7vh);height:min(56px,7vh);flex:none;border-radius:50%;border:3px solid currentColor;box-shadow:0 0 0 4px rgba(10,8,18,.55),0 0 18px currentColor;background:#241d36 center/cover;display:grid;place-items:center;overflow:hidden}
-.av.me{background-image:url(ref-main-character.png);background-position:50% 22%;background-size:190%}
+.av.me{background-image:url(../ref-main-character.png);background-position:50% 22%;background-size:190%}
 .av.ai{background:#12332f}.av.ai svg{width:72%;height:72%}
 .av.fr{background:#2c2150;font-size:24px;color:#CDBBFF}
 .tag{padding:5px 16px;border-radius:8px;border:2px solid currentColor;background:rgba(10,8,18,.55)}
@@ -168,7 +168,7 @@ body{background:var(--bg);color:var(--ink);font:500 22px/1.7 var(--font);overflo
 <button class="myid" id="who" hidden title="누르면 내 정보를 고칠 수 있어요"></button>
 <button class="menub" id="menub">수업 메뉴</button>
 <div class="end" id="end"><div><small id="en"></small><h2 id="et"></h2><p id="ep"></p><div class="learn"><div><em>되돌아보기</em><span id="etu"></span></div><div class="word"><em id="ew"></em><span id="els"></span></div></div><div class="eact"><a id="getc">카드 받기 ▸</a><a id="nx" hidden>다음 이야기로 ▸</a></div><div class="eact sub"><a id="bx" hidden>카드함 보기</a><a id="re" hidden></a></div><div id="nxm"></div></div></div>
-<div class="title" id="title"><div><small id="ts"></small><h1 id="th"></h1><p id="tp"></p><button id="go">시작하기</button></div></div>
+<div class="title" id="title"><div><small id="ts"></small><h1 id="th"></h1><p id="tp"></p><button id="go">시작하기</button><div id="lk" hidden><p id="lkt">🔒 선생님이 칠판에 알려 주는 <b>열쇠 번호</b>를 넣으면 열려요.</p><input id="lki" inputmode="numeric" maxlength="4" placeholder="4자리" autocomplete="off"> <button id="lkb">열기</button><p id="lkm"></p></div></div></div>
 
 <div class="scr" id="welcome"><div class="panel">
   <div class="ptop"><h2>AI 사건 체험관</h2></div>
@@ -184,6 +184,7 @@ body{background:var(--bg);color:var(--ink);font:500 22px/1.7 var(--font);overflo
   <div class="ptop"><h2>수업 메뉴</h2><a class="x" id="hubx">이야기로 돌아가기</a></div>
   <p class="psub"><span id="hubwho"></span> <a id="medit" style="cursor:pointer;text-decoration:underline;color:#FFC247;white-space:nowrap">✎ 내 정보 고치기</a></p>
   <div class="hub" id="hubrows"></div>
+  <p class="psub" id="hubcode" style="margin-top:14px">🔑 선생님과 함께 하는 수업이면 <b>입장 코드</b>를 넣어요 <input id="hci" placeholder="입장 코드" style="width:150px;padding:6px 10px;border-radius:8px;border:1.5px solid #3A3450;background:#15121F;color:#F4F0E8;font:inherit"> <button class="btn ghost" id="hcb" style="padding:6px 14px">저장</button> <span id="hcm"></span><br><small style="color:#A9A3B8">넣으면 2편·3편은 선생님이 알려 주는 열쇠 번호로 열려요. 혼자 연습할 때는 비워 두세요.</small></p>
   <div class="hubf">이 노트북에 저장된 기록을 모두 지우고 처음부터 하려면 <a id="wipe">여기를 눌러요</a>.</div>
 </div></div>
 
@@ -217,6 +218,7 @@ body{background:var(--bg);color:var(--ink);font:500 22px/1.7 var(--font);overflo
 <script src="data/story1.js"></script>
 <script src="data/story2.js"></script>
 <script src="data/story3.js"></script>
+<script src="stage.js"></script>
 <script src="fx.js"></script>
 <script src="cards.js"></script>
 <script src="deck.js"></script>
@@ -233,7 +235,9 @@ let ME=jget('aiethics.me.v1',null),PROG=jget('aiethics.prog.v1',{feel:['','','']
 let S=SS[0],si=0,autoRun=false,endId=null,picks=0,cur=null,busy=false,typing=null,tm=null,curId=null,running=false;
 
 $('snd').onclick=function(){const m=!FX.isMuted();FX.setMuted(m);this.textContent=m?'소리 꺼짐':'소리 켜짐'};
-function steps(){document.querySelectorAll('.steps i').forEach((e,i)=>e.classList.toggle('on',i<picks))}
+let isEnd=false,lastRep='';
+function steps(){document.querySelectorAll('.steps i').forEach((e,i)=>e.classList.toggle('on',i<picks));
+  const k=si+'-'+picks+'-'+isEnd;if(k!==lastRep){lastRep=k;STAGE.report(ME,si,picks,isEnd)}}
 function scene(n){
   $('lab').textContent=S.no+'편 · '+(n.label||'');
   const pic=$('pic'),ph=$('ph');
@@ -251,7 +255,7 @@ async function line(m,token){
 }
 let token=0;
 async function play(id){
-  const my=++token;curId=id;const n=S.nodes[id];
+  const my=++token;curId=id;const n=S.nodes[id];isEnd=!!n.end;
   if(n.end){
     const tag={good:'잘한 선택이 만든 결말',mid:'아쉬움이 남는 결말',bad:'위험했던 결말'}[n.mood];
     $('en').textContent='결말 '+n.name+' · '+tag;$('et').textContent=n.title;$('ep').textContent=n.t;
@@ -293,17 +297,26 @@ document.addEventListener('keydown',e=>{
 
 /* ---------- 이야기 시작·결말 ---------- */
 function startStory(i){
-  si=i;S=SS[i];picks=0;steps();autoRun=false;token++;if(tm)tm.stop();$('vig').classList.remove('on');
+  si=i;S=SS[i];picks=0;isEnd=false;steps();autoRun=false;token++;if(tm)tm.stop();$('vig').classList.remove('on');
   $('end').classList.remove('on');cine.innerHTML='';
   const it=S.intro;$('ts').textContent=it.sm;$('th').innerHTML=it.h1;$('tp').textContent=it.p;
   $('lab').textContent=S.no+'편 · '+S.series.split('· ')[1];
   $('pic').style.opacity=0;$('ph').textContent='';
   $('title').classList.remove('off');
+  const locked=!!STAGE.code()&&i>0&&!(PROG.unlock&&PROG.unlock[i]);
+  $('go').hidden=locked;$('lk').hidden=!locked;$('lki').value='';$('lkm').textContent='';
+  if(locked){$('ts').textContent=S.no+'편 · 잠겨 있어요';$('tp').textContent='앞 이야기를 마쳤다면 잠깐 기다려요. 선생님이 열쇠 번호를 알려 주면 이 이야기가 열려요.'}
 }
+function tryUnlock(){
+  const v=$('lki').value.trim();
+  if(v===STAGE.key(STAGE.code(),si)){PROG.unlock=PROG.unlock||[];PROG.unlock[si]=true;jset('aiethics.prog.v1',PROG);startStory(si)}
+  else{$('lkm').textContent='번호가 맞지 않아요. 칠판을 다시 확인해 봐요.';FX.play('bad')}
+}
+$('lkb').onclick=tryUnlock;$('lki').onkeydown=e=>{if(e.key==='Enter')tryUnlock()};
 $('go').onclick=()=>{$('title').classList.add('off');play(S.start)};
 function refreshEnd(){
   $('nx').hidden=false;$('bx').hidden=false;$('re').hidden=false;
-  $('nx').textContent=si<SS.length-1?'다음 이야기로 ▸':'수업 메뉴로 ▸';
+  $('nx').textContent=si<SS.length-1?(STAGE.code()&&!(PROG.unlock&&PROG.unlock[si+1])?'🔒 선생님을 기다려요 ▸':'다음 이야기로 ▸'):'수업 메뉴로 ▸';
   $('re').textContent='다른 길 더 보기 ('+CARDS.found(si)+'/'+CARDS.total(si)+' 발견)'}
 $('getc').onclick=async()=>{
   $('getc').hidden=true;
@@ -334,6 +347,8 @@ $('hubx').onclick=leaveScr;
 document.querySelectorAll('[data-back]').forEach(a=>a.onclick=()=>openScr('hub'));
 
 function renderHub(){
+  $('hci').value=STAGE.code();
+  $('hcb').onclick=()=>{STAGE.setCode($('hci').value);$('hcm').textContent=STAGE.code()?'저장했어요 ✅ (2편·3편은 열쇠 번호가 필요해요)':'지웠어요 (혼자 연습 모드)'};
   $('hubwho').textContent=(ME?ME.name+' ('+ME.cls+' · '+ME.group+'모둠'+(ME.leader?' · 모둠장':'')+')':'')+' — 순서대로 해도 되고, 선생님이 말하는 순서로 열어도 돼요.';
   const done=SS.filter((s,i)=>CARDS.found(i)>0).length;
   const rows=[

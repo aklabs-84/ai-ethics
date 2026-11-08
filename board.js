@@ -50,7 +50,7 @@ window.BOARD = (function () {
 .bd-q .o{display:block;width:100%;text-align:left;font:600 1em/1.4 var(--font,sans-serif);color:#fff;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.28);border-radius:10px;padding:13px 18px;margin-top:10px;cursor:pointer;transition:border-color .2s,background .2s}
 .bd-q .o:hover{border-color:#FFC247;background:rgba(255,194,71,.16)}
 .bd-q.g{border-color:#6EE7D0}.bd-q.b{border-color:#FF6B6B}.bd-q .go{margin-top:14px;font:700 1em var(--font,sans-serif);background:#FFC247;color:#15121F;border:0;border-radius:10px;padding:12px 28px;cursor:pointer;margin-right:10px}.bd-q .go.gh{background:none;color:#F4F0E8;border:1.5px solid #3A3450}
-.bd-q .good{color:#6EE7D0}
+.bd-q .good{color:#6EE7D0}.bd-q .rv1{margin-top:18px;text-align:center}.bd-q .rv1 .go{font-size:1.25em;padding:16px 44px;margin:0;animation:bdpulse 1.4s infinite}@keyframes bdpulse{50%{box-shadow:0 0 0 10px rgba(255,194,71,.25)}}.bd-q .hrow{margin-top:14px}.bd-q .hbtn{font:700 .95em var(--font,sans-serif);background:none;color:#FFC247;border:1.5px dashed #FFC247;border-radius:10px;padding:10px 18px;cursor:pointer}.bd-q .hbtn:hover{background:rgba(255,194,71,.14)}.bd-q .o.hint{opacity:.22;filter:blur(2.5px);pointer-events:none}.bd-q .hmsg{color:#FFC247;font-weight:700}
 .bd-tm{height:6px;background:#3A3450;border-radius:3px;margin:8px 0 2px;overflow:hidden}.bd-tm i{display:block;height:100%;background:#FFC247;transform-origin:left}
 .bd-ht{align-self:center;margin:6px 0 0;cursor:pointer;font:700 16px var(--font,sans-serif);color:#F4F0E8;background:#1c1830;border:2px solid #3A3450;border-radius:10px;padding:8px 18px;min-height:42px}.bd-ht:hover{border-color:#FFC247;color:#FFC247}.bd-ht b{color:#FFC247}.bd-ht.hot{border-color:#FFC247;animation:bdg 1s infinite}
 .bd-hand.fold{display:none}
@@ -188,14 +188,35 @@ body.bd-on #cbtn{display:none!important}
     }
     function ask() {
       const t = T[cur], c = take(t), os = shuffle(c.o); q = { c, os };
-      const el = showQ(`<small>${esc(c.g)} · 개념 「${esc(c.k)}」${cls ? ' · ' + esc(t.name) + ' 차례' : ''}</small><p class="s">${esc(c.s)}</p><p class="qq">${esc(c.q)}</p>${os.map((x, i) => `<button class="o" data-i="${i}">${esc(x.t)}</button>`).join('')}${o.timer ? '<div class="bd-tm"><i id="bd-tmi"></i></div>' : ''}`);
+      const el = showQ(`<small>${esc(c.g)} · 개념 「${esc(c.k)}」${cls ? ' · ' + esc(t.name) + ' 차례' : ''}</small><p class="s">${esc(c.s)}</p><div class="rv1" id="bd-rvb"><button class="go" id="bd-rv">어떻게 할까? ▶</button></div><div id="bd-ops" hidden><p class="qq">${esc(c.q)}</p>${os.map((x, i) => `<button class="o" data-i="${i}">${esc(x.t)}</button>`).join('')}<div class="hrow" id="bd-hr"></div>${o.timer ? '<div class="bd-tm"><i id="bd-tmi"></i></div>' : ''}</div>`);
       el.classList.add('big'); FX.play('show'); drawHand(c.k);
-      { const h = $('#bd-ht'); if (h) el.style.maxHeight = Math.max(260, h.getBoundingClientRect().top - 12) + 'px' }
-      el.onclick = e => { const b = e.target.closest('.o'); if (b) answer(os[+b.dataset.i]) };
-      if (o.timer) {
-        const t0 = Date.now(), bar = $('#bd-tmi');
-        tmr = setInterval(() => { const f = 1 - (Date.now() - t0) / 1000 / o.timer; if (bar) bar.style.transform = `scaleX(${Math.max(0, f)})`; if (f <= 0) { clearInterval(tmr); answer(null) } }, 100);
-      }
+      const fit = () => { const h = $('#bd-ht'); if (h) el.style.maxHeight = Math.max(260, h.getBoundingClientRect().top - 12) + 'px' };
+      fit();
+      el.onclick = e => { const b = e.target.closest('.o'); if (b && q) answer(os[+b.dataset.i]) };
+      $('#bd-rv').onclick = () => { // 지문을 읽은 뒤 버튼을 눌러야 선택지가 나와요 (타이머도 이때부터)
+        if (!q) return; $('#bd-rvb').remove(); $('#bd-ops').hidden = false; FX.play('show');
+        const hi = hintIdx(t, c.k), hr = $('#bd-hr');
+        if (hi >= 0) { hr.innerHTML = '<button class="hbtn" id="bd-hint">💡 힌트 쓰기 (카드 1장을 써요)</button>'; $('#bd-hint').onclick = () => useHint(c, os, hr) }
+        fit();
+        if (o.timer) {
+          const t0 = Date.now(), bar = $('#bd-tmi');
+          tmr = setInterval(() => { const f = 1 - (Date.now() - t0) / 1000 / o.timer; if (bar) bar.style.transform = `scaleX(${Math.max(0, f)})`; if (f <= 0) { clearInterval(tmr); answer(null) } }, 100);
+        }
+      };
+    }
+    // 힌트: 방패로 못 쓰는 카드(남는 카드) → 이 사건과 다른 개념의 방패 순서로 한 장을 써요
+    function hintIdx(t, k) {
+      let i = t.hand.findIndex(x => !x.used && x.type !== 'shield' && x.type !== 'special');
+      if (i < 0 && shieldLeft(t) > 0) i = t.hand.findIndex(x => !x.used && x.type === 'shield' && x.concept !== k);
+      return i;
+    }
+    function useHint(c, os, hr) {
+      const t = T[cur], i = hintIdx(t, c.k); if (i < 0 || !q) return;
+      const card = t.hand[i]; card.used = true; if (card.type === 'shield') t.used++; t.hints = (t.hints || 0) + 1;
+      const wrong = [...document.querySelectorAll('.bd-q .o')].filter(b => !os[+b.dataset.i].ok && !b.classList.contains('hint'));
+      if (wrong.length) wrong[Math.floor(Math.random() * wrong.length)].classList.add('hint');
+      FX.play('mid'); fx('💡 힌트!', t.pos); hr.innerHTML = '<span class="hmsg">💡 흐려진 선택지는 아쉬운 선택이에요 (「' + esc(card.concept) + '」 카드를 썼어요)</span>';
+      drawHand(c.k);
     }
     function result(good, msg, o2, c, extra) {
       const t = T[cur], okOpt = c.o.find(x => x.ok);
@@ -244,8 +265,9 @@ body.bd-on #cbtn{display:none!important}
       if (over) return; over = true; clearQ(); FX.play('good'); try { FX.confetti() } catch (e) {}
       const R = T.slice().sort((a, b) => b.pos - a.pos || b.ok - a.ok || a.turns - b.turns), words = [...new Set([].concat(...T.map(t => t.wrong)))];
       root.innerHTML = `<div class="bd-res"><h2>${T.length > 1 ? '🏆 ' + esc(R[0].name) + ' 우승!' : '도착! 🎉'}</h2>
-        <table><tr><th>순위</th><th>${T.length > 1 ? '모둠' : '나'}</th><th>간 곳</th><th>굴린 횟수</th><th>좋은 선택</th><th>아쉬운 선택</th><th>방패로 막음</th></tr>
-        ${R.map((t, i) => `<tr class="${i === 0 ? 'w' : ''}"><td>${i + 1}</td><td>${esc(t.name)}</td><td>${t.pos >= len ? '도착' : t.pos + '칸'}</td><td>${t.turns}</td><td>${t.ok}</td><td>${t.bad}</td><td>${t.blocks}</td></tr>`).join('')}</table>
+        <table><tr><th>순위</th><th>${T.length > 1 ? '모둠' : '나'}</th><th>간 곳</th><th>굴린 횟수</th><th>좋은 선택</th><th>아쉬운 선택</th><th>방패로 막음</th><th>남은 카드 ⭐</th></tr>
+        ${R.map((t, i) => `<tr class="${i === 0 ? 'w' : ''}"><td>${i + 1}</td><td>${esc(t.name)}</td><td>${t.pos >= len ? '도착' : t.pos + '칸'}</td><td>${t.turns}</td><td>${t.ok}</td><td>${t.bad}</td><td>${t.blocks}</td><td>${t.hand.filter(x => !x.used).length}</td></tr>`).join('')}</table>
+        ${(() => { const m = Math.max(...T.map(t => t.hand.filter(x => !x.used).length)); const w = T.filter(t => t.hand.filter(x => !x.used).length === m); return m > 0 ? `<div class="rv"><b>⭐ 카드 아끼기 상:</b> ${w.map(t => esc(t.name)).join(', ')} (안 쓴 카드 ${m}장 = ⭐ ${m}점)</div>` : '' })()}
         ${words.length ? `<div class="rv"><b>다시 생각해 볼 말:</b> ${words.map(esc).join(' · ')}</div>` : ''}
         <div class="rv"><b>오늘 배운 말:</b> 확인하기 · 정보 지키기 · 사람을 해치지 않기 · 밝히기와 내 책임</div>
         <button class="btn" id="bd-again">🔄 다시 하기</button><button class="btn" id="bd-ex" style="background:transparent;color:#FFC247;border:2px solid #FFC247">${o.mode === 'class' ? '처음 화면으로' : '메뉴로'}</button></div>`;
