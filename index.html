@@ -84,6 +84,12 @@ body{background:var(--bg);color:var(--ink);font:500 22px/1.7 var(--font);overflo
 .title h1{font:400 clamp(56px,10vw,140px)/1.05 var(--head);margin:10px 0 16px}
 .title p{color:var(--sub);font-size:20px;margin-bottom:34px}
 .title button{background:none;border:0;color:var(--ink);font:700 24px var(--font);cursor:pointer;padding:6px 2px;background:linear-gradient(var(--gold),var(--gold)) 0 100%/100% 2px no-repeat;transition:color .25s,background-size .3s}
+.title #lk{margin-top:6px}.title #lkt{font-size:22px;color:var(--ink);margin-bottom:18px}
+.title #lki{width:min(86vw,360px);font:700 56px var(--font);letter-spacing:.35em;text-align:center;padding:14px 10px 14px 24px;border-radius:14px;border:3px solid var(--gold);background:#fff;color:#15121F;margin-bottom:18px;display:block;margin-left:auto;margin-right:auto}
+.title #lki::placeholder{font-size:28px;letter-spacing:.1em;color:#999}
+.title #lkb{font-size:30px;padding:12px 44px;border-radius:12px;background:var(--gold);color:#15121F}.title #lkb:hover{background:#fff;color:#15121F}.title #lkm{margin:14px 0 0;color:#FF8E8E;font-size:20px;min-height:26px}
+.stp{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:14px 0 4px}.stp b{width:100%;text-align:center;font-size:15px;color:var(--sub);font-weight:600}
+.stp a{cursor:pointer;padding:10px 18px;border:1.5px solid var(--gold);border-radius:10px;color:var(--ink);font-size:17px;font-weight:700}.stp a:hover{background:var(--gold);color:#15121F}.stp a.cur{opacity:.5;pointer-events:none}
 .title button:hover{color:#15121F;background-size:100% 100%}
 @media (max-width:640px){.hud{padding:14px 18px}.cine{padding:24px 20px 40px}.next{right:20px;bottom:12px}.steps i{width:22px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
@@ -167,7 +173,7 @@ body{background:var(--bg);color:var(--ink);font:500 22px/1.7 var(--font);overflo
 <button class="snd" id="snd">소리 켜짐</button>
 <button class="myid" id="who" hidden title="누르면 내 정보를 고칠 수 있어요"></button>
 <button class="menub" id="menub">수업 메뉴</button>
-<div class="end" id="end"><div><small id="en"></small><h2 id="et"></h2><p id="ep"></p><div class="learn"><div><em>되돌아보기</em><span id="etu"></span></div><div class="word"><em id="ew"></em><span id="els"></span></div></div><div class="eact"><a id="getc">카드 받기 ▸</a><a id="nx" hidden>다음 이야기로 ▸</a></div><div class="eact sub"><a id="bx" hidden>카드함 보기</a><a id="re" hidden></a></div><div id="nxm"></div></div></div>
+<div class="end" id="end"><div><small id="en"></small><h2 id="et"></h2><p id="ep"></p><div class="learn"><div><em>되돌아보기</em><span id="etu"></span></div><div class="word"><em id="ew"></em><span id="els"></span></div></div><div class="eact"><a id="getc">카드 받기 ▸</a><a id="nx" hidden>다음 이야기로 ▸</a></div><div class="eact sub"><a id="bx" hidden>카드함 보기</a><a id="re" hidden></a></div><div class="stp" id="stp1"></div><div id="nxm"></div></div></div>
 <div class="title" id="title"><div><small id="ts"></small><h1 id="th"></h1><p id="tp"></p><button id="go">시작하기</button><div id="lk" hidden><p id="lkt">🔒 선생님이 칠판에 알려 주는 <b>열쇠 번호</b>를 넣으면 열려요.</p><input id="lki" inputmode="numeric" maxlength="4" placeholder="4자리" autocomplete="off"> <button id="lkb">열기</button><p id="lkm"></p></div></div></div>
 
 <div class="scr" id="welcome"><div class="panel">
@@ -184,6 +190,7 @@ body{background:var(--bg);color:var(--ink);font:500 22px/1.7 var(--font);overflo
   <div class="ptop"><h2>수업 메뉴</h2><a class="x" id="hubx">이야기로 돌아가기</a></div>
   <p class="psub"><span id="hubwho"></span> <a id="medit" style="cursor:pointer;text-decoration:underline;color:#FFC247;white-space:nowrap">✎ 내 정보 고치기</a></p>
   <div class="hub" id="hubrows"></div>
+  <div class="stp" id="stp2"></div>
   <p class="psub" id="hubcode" style="margin-top:14px">🔑 선생님과 함께 하는 수업이면 <b>입장 코드</b>를 넣어요 <input id="hci" placeholder="입장 코드" style="width:150px;padding:6px 10px;border-radius:8px;border:1.5px solid #3A3450;background:#15121F;color:#F4F0E8;font:inherit"> <button class="btn ghost" id="hcb" style="padding:6px 14px">저장</button> <span id="hcm"></span><br><small style="color:#A9A3B8">넣으면 2편·3편은 선생님이 알려 주는 열쇠 번호로 열려요. 혼자 연습할 때는 비워 두세요.</small></p>
   <div class="hubf">이 노트북에 저장된 기록을 모두 지우고 처음부터 하려면 <a id="wipe">여기를 눌러요</a>.</div>
 </div></div>
@@ -303,7 +310,7 @@ function startStory(i){
   $('lab').textContent=S.no+'편 · '+S.series.split('· ')[1];
   $('pic').style.opacity=0;$('ph').textContent='';
   $('title').classList.remove('off');
-  const locked=!!STAGE.code()&&i>0&&!(PROG.unlock&&PROG.unlock[i]);
+  const locked=STAGE.locked()&&i>0&&!(PROG.unlock&&PROG.unlock[i]);
   $('go').hidden=locked;$('lk').hidden=!locked;$('lki').value='';$('lkm').textContent='';
   if(locked){$('ts').textContent=S.no+'편 · 잠겨 있어요';$('tp').textContent='앞 이야기를 마쳤다면 잠깐 기다려요. 선생님이 열쇠 번호를 알려 주면 이 이야기가 열려요.'}
 }
@@ -314,9 +321,14 @@ function tryUnlock(){
 }
 $('lkb').onclick=tryUnlock;$('lki').onkeydown=e=>{if(e.key==='Enter')tryUnlock()};
 $('go').onclick=()=>{$('title').classList.add('off');play(S.start)};
+function storyPick(){
+  const h='<b>📖 이야기 골라서 다시 하기</b>'+SS.map((x,i)=>{const lk=STAGE.locked()&&i>0&&!(PROG.unlock&&PROG.unlock[i]);const d=PROG.done&&PROG.done[i];
+    return '<a data-s="'+i+'"'+(i===si&&$('title').classList.contains('off')?' class="cur"':'')+'>'+(lk?'🔒 ':d?'✅ ':'')+x.no+'편</a>'}).join('');
+  ['stp1','stp2'].forEach(id=>{const e=$(id);e.innerHTML=h;e.querySelectorAll('a').forEach(a=>a.onclick=()=>{closeAll();$('end').classList.remove('on');startStory(+a.dataset.s)})})}
 function refreshEnd(){
+  storyPick();
   $('nx').hidden=false;$('bx').hidden=false;$('re').hidden=false;
-  $('nx').textContent=si<SS.length-1?(STAGE.code()&&!(PROG.unlock&&PROG.unlock[si+1])?'🔒 선생님을 기다려요 ▸':'다음 이야기로 ▸'):'수업 메뉴로 ▸';
+  $('nx').textContent=si<SS.length-1?(STAGE.locked()&&!(PROG.unlock&&PROG.unlock[si+1])?'🔒 선생님을 기다려요 ▸':'다음 이야기로 ▸'):'수업 메뉴로 ▸';
   $('re').textContent='다른 길 더 보기 ('+CARDS.found(si)+'/'+CARDS.total(si)+' 발견)'}
 $('getc').onclick=async()=>{
   $('getc').hidden=true;
@@ -347,6 +359,7 @@ $('hubx').onclick=leaveScr;
 document.querySelectorAll('[data-back]').forEach(a=>a.onclick=()=>openScr('hub'));
 
 function renderHub(){
+  storyPick();
   $('hci').value=STAGE.code();
   $('hcb').onclick=()=>{STAGE.setCode($('hci').value);$('hcm').textContent=STAGE.code()?'저장했어요 ✅ (2편·3편은 열쇠 번호가 필요해요)':'지웠어요 (혼자 연습 모드)'};
   $('hubwho').textContent=(ME?ME.name+' ('+ME.cls+' · '+ME.group+'모둠'+(ME.leader?' · 모둠장':'')+')':'')+' — 순서대로 해도 되고, 선생님이 말하는 순서로 열어도 돼요.';
