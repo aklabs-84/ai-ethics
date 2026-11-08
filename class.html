@@ -77,6 +77,7 @@ body.bd-on .aklabs-foot{display:none}
 <div class="setup" id="root">
 <h1>선생님 화면 · 모둠 대결</h1>
 <p>학생들이 클래스로그 AI에 낸 글을 <b>전부 복사해서 한 칸에 붙여넣으면</b> 모둠별로 알아서 나눠요. 서버 없이 이 화면에서만 동작해요. <a class="gl" href="guide.html" target="_blank">▶ 수업용 설명 화면(가이드) 열기</a></p>
+<p><button class="btn big" id="sample" style="margin:0 8px 8px 0">🎮 샘플로 바로 체험하기 <small>(제출글 없이 예시 모둠 3개로 시작)</small></button></p>
 <p><button class="btn g" id="gxo" style="margin:0">📚 개념 카드 한눈에 보기 <small>(수업 설명용)</small></button></p>
 <div class="rules"><b>규칙</b><ul>
 <li>길은 12칸. 좋은 선택 +2칸, 아쉬운 선택 −2칸. 5칸·10칸은 쉼 칸이에요.</li>
@@ -237,6 +238,14 @@ $('go').onclick=()=>{
     onExit:()=>location.reload()})};
   if(ns.length>1)drawOrder(ns,start);else start(ns);
 };
+// 샘플 체험: 제출글 없이 예시 모둠 3개(예비 사건카드 + 방패 카드)로 바로 대결 화면을 보여 줘요
+$('sample').onclick=()=>{
+  T={};seen.clear();
+  const res=DECK.RESERVE,sh=CARDS.ALL.filter(id=>!CARDS.isSp(id)&&CARDS.data(id).type==='shield');
+  ['1모둠','2모둠','3모둠'].forEach((n,i)=>{const t=team(n);t.people.add('샘플');
+    res.filter((_,j)=>j%3===i).forEach(c=>t.cards.push({g:n,k:c.k,s:c.s,q:c.q,o:c.o,_off:false}));
+    sh.filter((_,j)=>j%3===i).forEach(id=>t.ids.add(id))});
+  render();$('rs').checked=true;$('go').click()};
 $('mk').onclick=()=>{
   let a=allCards();if($('rs').checked)a=a.concat(DECK.RESERVE);
   if(!a.length){alert('사용할 카드가 없어요');return}
