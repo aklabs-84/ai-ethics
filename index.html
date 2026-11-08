@@ -216,7 +216,7 @@ body{background:var(--bg);color:var(--ink);font:500 22px/1.7 var(--font);overflo
   <div id="sbbody"></div>
   <div class="sb"><h3>우리 모둠의 약속 한 줄</h3><p>오늘 배운 것으로 AI를 쓸 때 우리 모둠이 지킬 약속을 한 줄로 써요.</p><textarea id="sbp" rows="2" placeholder="예) 우리는 AI가 알려 준 건 꼭 한 번 더 확인하고, 쓴 건 솔직하게 밝힌다."></textarea></div>
   <div class="acts"><button class="btn" id="sbmk">제출 내용 만들기</button></div>
-  <div class="out" id="sbout" hidden><p>아래 글을 <b>처음부터 끝까지 모두</b> 복사해서 클래스로그 AI의 「결과 제출하기」에 붙여넣어 주세요. 맨 아래 긴 글자(대결용 코드)도 꼭 같이요!</p><textarea id="sbt" rows="12" readonly></textarea><button class="btn ghost" id="sbcp">복사하기</button> <span class="ok" id="sbok"></span>
+  <div class="out" id="sbout" hidden><p>내가 쓴 느낀 점과 약속이에요. 맞는지 읽어 보고, 아래에서 바로 제출하거나 복사해서 클래스로그 AI의 「결과 제출하기」에 붙여넣어 주세요.</p><textarea id="sbt" rows="12" readonly></textarea><button class="btn ghost" id="sbcp">복사하기</button> <span class="ok" id="sbok"></span>
   <div id="sbsend" hidden style="margin-top:16px;padding-top:14px;border-top:1px dashed var(--line,#ccc)"><p><b>복사하지 않고 바로 제출할 수도 있어요.</b> 입장 코드는 선생님이 알려 주세요.</p><input id="sbcode" placeholder="입장 코드" style="padding:10px;font-size:16px;width:160px"> <button class="btn" id="sbgo">바로 제출하기</button> <span id="sbmsg"></span></div>
   <p id="sblink" hidden style="margin-top:14px"><a class="x" id="sbopen" target="_blank">클래스로그 열기 ▸</a></p></div>
 </div></div>
@@ -393,13 +393,9 @@ function renderSubmit(){
   $('sbp').oninput=()=>{PROG.promise=$('sbp').value;jset('aiethics.prog.v1',PROG)};
 }
 $('sbmk').onclick=()=>{
-  const h=CARDS.load();
-  let t=`[AI 사건 체험관 제출]\n이름: ${ME.name} / 반: ${ME.cls} / 모둠: ${ME.group}${ME.leader?' (모둠장)':''}\n모은 카드: ${h.length}/18장\n`;
-  SS.forEach((s,i)=>{const ends=Object.keys(s.nodes).filter(k=>s.nodes[k].end&&h.includes((i+1)+'-'+k)).map(k=>s.nodes[k].name+' '+s.nodes[k].title);
-    t+=`\n■ ${s.no}편 ${s.series.split('· ')[1]} — 발견한 결말 ${ends.length}/${CARDS.total(i)}: ${ends.join(', ')||'없음'}\n느낀 점: ${PROG.feel[i]||'(적지 않았어요)'}\n`});
+  let t='';
+  SS.forEach((s,i)=>{t+=`${i?'\n':''}■ ${s.no}편 ${s.series.split('· ')[1]} — 느낀 점\n${PROG.feel[i]||'(적지 않았어요)'}\n`});
   t+=`\n■ 우리 모둠의 약속\n${PROG.promise||'(적지 않았어요)'}\n`;
-  let pk='';try{pk=localStorage.getItem('aiethics.pack.v1')||''}catch(e){}
-  t+=`\n■ 수업 대결용 코드 (선생님 화면에서 읽어요. 지우지 말고 그대로 두세요)\n사건카드 코드: ${pk||'(아직 사건카드를 만들지 않았어요)'}\n카드 코드: AIC1@${ME.group}.${h.join(',')}\n`;
   $('sbt').value=t;$('sbout').hidden=false;
   if(window.CONFIG&&CONFIG.apiUrl){$('sbsend').hidden=false;let c='';try{c=new URLSearchParams(location.search).get('entryCode')||localStorage.getItem('aiethics.code.v1')||''}catch(e){}$('sbcode').value=c}
   if(window.CONFIG&&CONFIG.classlogUrl){$('sblink').hidden=false;$('sbopen').href=CONFIG.classlogUrl}
